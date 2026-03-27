@@ -20,16 +20,17 @@
 ## Common Flows
 
 - 단일 명령 래퍼:
-  - `soullink up`
-  - `soullink up-bootstrap`
-  - `soullink dev`
-  - `soullink all`
-  - `soullink run <fe|be|app>`
-  - `soullink stop-run <fe|be|app>`
-  - `soullink status`
-  - `soullink start-task ...`
-  - `soullink task-from-spec ...`
-  - `soullink start-review ...`
+  - `workspace up <project>`
+  - `workspace up-bootstrap <project>`
+  - `workspace dev <project>`
+  - `workspace all <project>`
+  - `workspace run <project> <fe|be|app>`
+  - `workspace stop-run <project> <fe|be|app>`
+  - `workspace status <project>`
+  - `workspace start-task <project> ...`
+  - `workspace task-from-spec <project> ...`
+  - `workspace start-review <project> ...`
+  - `ws up <project>`
 - 기본 세션 + 기본 Claude 창 부팅:
   - `scripts/tmux/init-product.sh --config config/<product>.env --bootstrap-defaults`
 - 기본 세션 + FE/BE 런타임 시작:
@@ -90,6 +91,7 @@
 - `app` 런타임은 더 무거울 수 있으므로 기본 자동 시작 대상에서 제외하고 필요할 때만 `run app`으로 올립니다.
 - 필요하면 runtime 시작 전에 `RUN_*_PRE_CMD`로 인프라를 먼저 보장할 수 있습니다.
 - 백엔드처럼 Docker 인프라가 필요한 경우 `RUN_BE_PRE_CMD`에서 Docker Desktop, db, redis를 먼저 준비한 뒤 앱을 실행합니다.
+- 전역 `up`, `dev`처럼 너무 짧은 이름은 셸/도구 충돌 가능성이 커서, 공통 런처는 `workspace` 또는 `ws`를 기본으로 사용합니다.
 - task worktree 브랜치는 기본적으로 `codex/<target>/<slug>` 규칙을 사용합니다.
 - handoff는 task brief 파일을 기준으로 worker pane에 전달합니다.
 - 기본값은 `--mode shell`이며, 일반 셸 pane에서도 에러 없이 handoff 내용을 출력합니다.

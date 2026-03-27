@@ -84,16 +84,17 @@ last_reviewed: 2026-03-27
 
 ## Baseline Commands
 
-- `soullink up`
-- `soullink up-bootstrap`
-- `soullink dev`
-- `soullink all`
-- `soullink run <fe|be|app>`
-- `soullink stop-run <fe|be|app>`
-- `soullink status`
-- `soullink start-task ...`
-- `soullink task-from-spec ...`
-- `soullink start-review ...`
+- `workspace up <project>`
+- `workspace up-bootstrap <project>`
+- `workspace dev <project>`
+- `workspace all <project>`
+- `workspace run <project> <fe|be|app>`
+- `workspace stop-run <project> <fe|be|app>`
+- `workspace status <project>`
+- `workspace start-task <project> ...`
+- `workspace task-from-spec <project> ...`
+- `workspace start-review <project> ...`
+- `ws up <project>`
 - `scripts/tmux/init-product.sh --config config/<product>.env`
 - `scripts/tmux/init-product.sh --config config/<product>.env --bootstrap-defaults`
 - `scripts/tmux/start-runtime.sh --config config/<product>.env --wait be`
@@ -109,3 +110,5 @@ last_reviewed: 2026-03-27
 - `scripts/tmux/start-review.sh --config config/<product>.env --agent gemini --mode prompt <target> <slug>`
 - `scripts/tmux/status.sh --config config/<product>.env`
 - `scripts/tmux/cleanup-task.sh --config config/<product>.env --delete-worktree <target> <slug>`
+
+공통 런처 이름은 `workspace` 또는 `ws`를 기본으로 사용한다. `up`, `dev` 같은 단일 전역 명령은 다른 도구와 충돌하기 쉬워 권장하지 않는다.

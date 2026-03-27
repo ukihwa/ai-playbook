@@ -1,0 +1,160 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+SOURCE_PATH="${BASH_SOURCE[0]}"
+while [[ -L "${SOURCE_PATH}" ]]; do
+	SOURCE_DIR="$(cd -P "$(dirname "${SOURCE_PATH}")" && pwd)"
+	SOURCE_PATH="$(readlink "${SOURCE_PATH}")"
+	[[ "${SOURCE_PATH}" != /* ]] && SOURCE_PATH="${SOURCE_DIR}/${SOURCE_PATH}"
+done
+ROOT_DIR="$(cd -P "$(dirname "${SOURCE_PATH}")/.." && pwd)"
+TMUX_DIR="${ROOT_DIR}/scripts/tmux"
+CONFIG_DIR="${ROOT_DIR}/config"
+
+usage() {
+	cat <<'EOF'
+Usage: workspace <command> <project> [args]
+       ws <command> <project> [args]
+
+Commands:
+  up <project>                    Create the base tmux session
+  up-bootstrap <project>          Create the base session and bootstrap default Claude panes
+  dev <project>                   Create the base session and start FE/BE runtimes
+  all <project>                   Create the base session, bootstrap defaults, and start FE/BE runtimes
+  run <project> <fe|be|app>       Start a configured runtime window
+  stop-run <project> <fe|be|app>  Stop a configured runtime window
+  status <project>                Show tmux and worktree status
+  task <project> <target> <slug>  Create a worker window and worktree
+  start-task <project> ...        Create a worker, generate handoff, and send it
+  task-from-spec <project> ...    Start a task from a spec or issue markdown file
+  review <project> ...            Create a review window
+  start-review <project> ...      Create a review window, generate artifact, and send it
+  handoff <project> ...           Send an existing handoff file into a pane
+  cleanup <project> ...           Remove task/review windows and optionally the worktree
+  projects                        List available project configs
+  help                            Show this help
+EOF
+}
+
+need_script() {
+	local path="$1"
+	[[ -x "${path}" ]] || {
+		echo "error: missing executable: ${path}" >&2
+		exit 1
+	}
+}
+
+resolve_config() {
+	local project="$1"
+	local path="${CONFIG_DIR}/${project}.env"
+	[[ -f "${path}" ]] || {
+		echo "error: project config not found: ${path}" >&2
+		exit 1
+	}
+	printf '%s' "${path}"
+}
+
+list_projects() {
+	find "${CONFIG_DIR}" -maxdepth 1 -type f -name '*.env' -print \
+		| sed -E 's#.*/([^/]+)\.env$#\1#' \
+		| sort
+}
+
+for script in \
+	"${TMUX_DIR}/init-product.sh" \
+	"${TMUX_DIR}/start-runtime.sh" \
+	"${TMUX_DIR}/stop-runtime.sh" \
+	"${TMUX_DIR}/status.sh" \
+	"${TMUX_DIR}/new-task.sh" \
+	"${TMUX_DIR}/start-task.sh" \
+	"${TMUX_DIR}/start-task-from-spec.sh" \
+	"${TMUX_DIR}/review-task.sh" \
+	"${TMUX_DIR}/start-review.sh" \
+	"${TMUX_DIR}/handoff.sh" \
+	"${TMUX_DIR}/cleanup-task.sh"
+do
+	need_script "${script}"
+done
+
+COMMAND="${1:-help}"
+if [[ $# -gt 0 ]]; then
+	shift
+fi
+
+case "${COMMAND}" in
+	help|-h|--help)
+		usage
+		exit 0
+		;;
+	projects)
+		list_projects
+		exit 0
+		;;
+esac
+
+PROJECT="${1:-}"
+[[ -n "${PROJECT}" ]] || {
+	echo "error: missing project name" >&2
+	echo >&2
+	usage >&2
+	exit 1
+}
+shift
+
+CONFIG_FILE="$(resolve_config "${PROJECT}")"
+
+case "${COMMAND}" in
+	up)
+		exec "${TMUX_DIR}/init-product.sh" --config "${CONFIG_FILE}" "$@"
+		;;
+	up-bootstrap)
+		exec "${TMUX_DIR}/init-product.sh" --config "${CONFIG_FILE}" --bootstrap-defaults "$@"
+		;;
+	dev)
+		"${TMUX_DIR}/init-product.sh" --config "${CONFIG_FILE}" "$@"
+		"${TMUX_DIR}/start-runtime.sh" --config "${CONFIG_FILE}" --wait be
+		exec "${TMUX_DIR}/start-runtime.sh" --config "${CONFIG_FILE}" --wait fe
+		;;
+	all)
+		"${TMUX_DIR}/init-product.sh" --config "${CONFIG_FILE}" --bootstrap-defaults "$@"
+		"${TMUX_DIR}/start-runtime.sh" --config "${CONFIG_FILE}" --wait be
+		exec "${TMUX_DIR}/start-runtime.sh" --config "${CONFIG_FILE}" --wait fe
+		;;
+	run)
+		exec "${TMUX_DIR}/start-runtime.sh" --config "${CONFIG_FILE}" "$@"
+		;;
+	stop-run)
+		exec "${TMUX_DIR}/stop-runtime.sh" --config "${CONFIG_FILE}" "$@"
+		;;
+	status)
+		exec "${TMUX_DIR}/status.sh" --config "${CONFIG_FILE}" "$@"
+		;;
+	task)
+		exec "${TMUX_DIR}/new-task.sh" --config "${CONFIG_FILE}" "$@"
+		;;
+	start-task)
+		exec "${TMUX_DIR}/start-task.sh" --config "${CONFIG_FILE}" "$@"
+		;;
+	task-from-spec)
+		exec "${TMUX_DIR}/start-task-from-spec.sh" --config "${CONFIG_FILE}" "$@"
+		;;
+	review)
+		exec "${TMUX_DIR}/review-task.sh" --config "${CONFIG_FILE}" "$@"
+		;;
+	start-review)
+		exec "${TMUX_DIR}/start-review.sh" --config "${CONFIG_FILE}" "$@"
+		;;
+	handoff)
+		exec "${TMUX_DIR}/handoff.sh" --config "${CONFIG_FILE}" "$@"
+		;;
+	cleanup)
+		exec "${TMUX_DIR}/cleanup-task.sh" --config "${CONFIG_FILE}" "$@"
+		;;
+	*)
+		echo "error: unknown command '${COMMAND}'" >&2
+		echo >&2
+		usage >&2
+		exit 1
+		;;
+esac
