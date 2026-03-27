@@ -39,4 +39,4 @@ If a required document does not exist yet, say so briefly and continue with the 
 - Separate authoring from approval: implementation first, review second.
 - For substantial changes, update docs that materially affect onboarding or future implementation.
 - Keep this file short. Put detailed guidance in `docs/` rather than expanding this file aggressively.
-
+- When creating commits or PR titles, follow the repository git workflow convention.
