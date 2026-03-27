@@ -14,6 +14,7 @@
 2. `02-docs/reference-resource-policy.md`
 3. `03-workflows/doc-update-policy.md`
 4. `03-workflows/code-review-harness-workflow.md`
-5. `04-automation/tmux-harness-architecture.md`
-6. `04-automation/omc-usage-guide.md`
-7. `06-checklists/new-project-checklist.md`
+5. `04-automation/skill-evaluation-policy.md`
+6. `04-automation/tmux-harness-architecture.md`
+7. `04-automation/omc-usage-guide.md`
+8. `06-checklists/new-project-checklist.md`

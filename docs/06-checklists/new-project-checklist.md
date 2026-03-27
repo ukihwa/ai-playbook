@@ -19,6 +19,7 @@ tags:
 related:
   - ../02-docs/docs-structure-guide.md
   - ../03-workflows/doc-update-policy.md
+  - ../04-automation/skill-evaluation-policy.md
   - ../04-automation/tmux-harness-architecture.md
 last_reviewed: 2026-03-27
 ---
@@ -71,3 +72,11 @@ last_reviewed: 2026-03-27
 - [ ] 필요 시 `.claude/agents/qa-inspector.md` 생성
 - [ ] 필요 시 `.claude/skills/review-orchestrator/` 생성
 - [ ] 필요 시 `cross-verify`를 선택적 검증 스킬로 도입할지 판단
+
+## Skill Governance
+
+- [ ] 새 skill은 `experimental` 상태로 시작
+- [ ] 도입 전 evaluation 기준 정의
+- [ ] 필요 시 A/B 테스트 설계
+- [ ] 채택 전 false positive / 누락 사례 점검
+- [ ] project-scoped와 user-scoped 중 어디에 둘지 결정
