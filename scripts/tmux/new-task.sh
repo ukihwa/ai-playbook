@@ -8,6 +8,8 @@ source "${SCRIPT_DIR}/common.sh"
 
 CONFIG_PATH=""
 BRANCH_NAME=""
+AGENT_NAME=""
+PANE_INDEX="0"
 
 while [[ $# -gt 0 ]]; do
 	case "$1" in
@@ -17,6 +19,14 @@ while [[ $# -gt 0 ]]; do
 			;;
 		--branch)
 			BRANCH_NAME="$2"
+			shift 2
+			;;
+		--agent)
+			AGENT_NAME="$2"
+			shift 2
+			;;
+		--pane)
+			PANE_INDEX="$2"
 			shift 2
 			;;
 		*)
@@ -45,9 +55,16 @@ ensure_two_panes "${WINDOW_NAME}"
 tmux send-keys -t "$(pane_path "${WINDOW_NAME}").0" "cd ${WORKTREE_DIR}" C-m
 tmux send-keys -t "$(pane_path "${WINDOW_NAME}").1" "cd ${REPO_DIR}" C-m
 
+if [[ -n "${AGENT_NAME}" ]]; then
+	"${SCRIPT_DIR}/bootstrap-agent.sh" --config "${CONFIG_PATH}" --agent "${AGENT_NAME}" --pane "${PANE_INDEX}" "${WINDOW_NAME}" >/dev/null
+fi
+
 print_header "task worker ready"
 echo "session: ${TMUX_SESSION}"
 echo "window: ${WINDOW_NAME}"
 echo "repo: ${REPO_DIR}"
 echo "worktree: ${WORKTREE_DIR}"
 echo "branch: ${BRANCH_NAME}"
+if [[ -n "${AGENT_NAME}" ]]; then
+	echo "agent: ${AGENT_NAME} (pane ${PANE_INDEX})"
+fi

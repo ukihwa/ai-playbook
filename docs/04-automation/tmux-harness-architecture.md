@@ -82,8 +82,10 @@ last_reviewed: 2026-03-27
 ## Baseline Commands
 
 - `scripts/tmux/init-product.sh --config config/<product>.env`
-- `scripts/tmux/new-task.sh --config config/<product>.env <target> <slug>`
+- `scripts/tmux/init-product.sh --config config/<product>.env --bootstrap-defaults`
+- `scripts/tmux/bootstrap-agent.sh --config config/<product>.env --agent claude <window>`
+- `scripts/tmux/new-task.sh --config config/<product>.env --agent claude <target> <slug>`
 - `scripts/tmux/handoff.sh --config config/<product>.env <window> <ticket-file>`
-- `scripts/tmux/review-task.sh --config config/<product>.env <target> <slug>`
+- `scripts/tmux/review-task.sh --config config/<product>.env --agent codex <target> <slug>`
 - `scripts/tmux/status.sh --config config/<product>.env`
 - `scripts/tmux/cleanup-task.sh --config config/<product>.env --delete-worktree <target> <slug>`

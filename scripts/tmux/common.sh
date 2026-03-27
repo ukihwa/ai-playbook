@@ -42,6 +42,9 @@ load_config() {
 	TMUX_SESSION="${TMUX_SESSION:-${PRODUCT_NAME}}"
 	DEFAULT_BRANCH="${DEFAULT_BRANCH:-main}"
 	TRIAGE_DIR="${TRIAGE_DIR:-${WORK_ROOT}}"
+	AGENT_CLAUDE_CMD="${AGENT_CLAUDE_CMD:-claude}"
+	AGENT_CODEX_CMD="${AGENT_CODEX_CMD:-codex}"
+	AGENT_GEMINI_CMD="${AGENT_GEMINI_CMD:-gemini}"
 }
 
 resolve_target_dir() {
@@ -140,4 +143,22 @@ create_worktree_if_missing() {
 
 print_header() {
 	printf '== %s ==\n' "$1"
+}
+
+resolve_agent_command() {
+	local agent="$1"
+	case "${agent}" in
+		claude)
+			printf '%s' "${AGENT_CLAUDE_CMD}"
+			;;
+		codex)
+			printf '%s' "${AGENT_CODEX_CMD}"
+			;;
+		gemini)
+			printf '%s' "${AGENT_GEMINI_CMD}"
+			;;
+		*)
+			die "unsupported agent '${agent}'. use claude, codex, or gemini"
+			;;
+	esac
 }

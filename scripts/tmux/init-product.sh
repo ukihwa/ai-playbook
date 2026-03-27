@@ -8,6 +8,7 @@ source "${SCRIPT_DIR}/common.sh"
 
 CONFIG_PATH=""
 ATTACH="false"
+BOOTSTRAP_DEFAULTS="false"
 
 while [[ $# -gt 0 ]]; do
 	case "$1" in
@@ -19,11 +20,23 @@ while [[ $# -gt 0 ]]; do
 			ATTACH="true"
 			shift
 			;;
+		--bootstrap-defaults)
+			BOOTSTRAP_DEFAULTS="true"
+			shift
+			;;
 		*)
 			die "unknown argument: $1"
 			;;
 	esac
 done
+
+bootstrap_window_if_exists() {
+	local window_name="$1"
+	local agent_name="$2"
+	if tmux_window_exists "${window_name}"; then
+		"${SCRIPT_DIR}/bootstrap-agent.sh" --config "${CONFIG_PATH}" --agent "${agent_name}" "${window_name}" >/dev/null
+	fi
+}
 
 need_cmd tmux
 load_config "${CONFIG_PATH}"
@@ -52,6 +65,14 @@ done
 print_header "tmux session ready"
 echo "session: ${TMUX_SESSION}"
 tmux list-windows -t "${TMUX_SESSION}" -F ' - #W -> #{pane_current_path}'
+
+if [[ "${BOOTSTRAP_DEFAULTS}" == "true" ]]; then
+	bootstrap_window_if_exists "triage" "claude"
+	bootstrap_window_if_exists "claude-fe" "claude"
+	bootstrap_window_if_exists "claude-be" "claude"
+	bootstrap_window_if_exists "claude-app" "claude"
+	echo "bootstrapped: triage, claude-fe, claude-be, claude-app"
+fi
 
 if [[ "${ATTACH}" == "true" ]]; then
 	exec tmux attach-session -t "${TMUX_SESSION}"

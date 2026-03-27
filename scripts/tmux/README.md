@@ -4,12 +4,24 @@
 
 ## Commands
 
-- `init-product.sh --config <file>`
-- `new-task.sh --config <file> <target> <slug>`
+- `init-product.sh --config <file> [--bootstrap-defaults]`
+- `bootstrap-agent.sh --config <file> --agent <claude|codex|gemini> <window>`
+- `new-task.sh --config <file> [--agent <claude|codex|gemini>] [--pane <index>] <target> <slug>`
 - `handoff.sh --config <file> [--pane <index>] [--mode shell|prompt] <window> <ticket-file>`
-- `review-task.sh --config <file> <target> <slug>`
+- `review-task.sh --config <file> [--agent <claude|codex|gemini>] [--pane <index>] <target> <slug>`
 - `status.sh --config <file>`
 - `cleanup-task.sh --config <file> [--delete-worktree] <target> <slug>`
+
+## Common Flows
+
+- 기본 세션 + 기본 Claude 창 부팅:
+  - `scripts/tmux/init-product.sh --config config/<product>.env --bootstrap-defaults`
+- 새 task window + Codex 부팅:
+  - `scripts/tmux/new-task.sh --config config/<product>.env --agent codex <target> <slug>`
+- 리뷰 window + Gemini 부팅:
+  - `scripts/tmux/review-task.sh --config config/<product>.env --agent gemini <target> <slug>`
+- worker pane에 task brief 전달:
+  - `scripts/tmux/handoff.sh --config config/<product>.env <target>/<slug> /path/to/handoff.md`
 
 ## Config
 
@@ -30,6 +42,9 @@
 - `TMUX_SESSION`
 - `DEFAULT_BRANCH`
 - `TRIAGE_DIR`
+- `AGENT_CLAUDE_CMD`
+- `AGENT_CODEX_CMD`
+- `AGENT_GEMINI_CMD`
 - `RUN_FE_DIR`, `RUN_BE_DIR`, `RUN_APP_DIR`
 - `CLAUDE_FE_DIR`, `CLAUDE_BE_DIR`, `CLAUDE_APP_DIR`
 
@@ -42,3 +57,4 @@
 - handoff는 task brief 파일을 기준으로 worker pane에 전달합니다.
 - 기본값은 `--mode shell`이며, 일반 셸 pane에서도 에러 없이 handoff 내용을 출력합니다.
 - Claude/Codex/Gemini 프롬프트 pane에 직접 붙일 때만 `--mode prompt`를 사용합니다.
+- agent bootstrap은 config에 정의된 CLI 명령을 사용합니다.
