@@ -19,6 +19,7 @@ tags:
 related:
   - ../02-docs/docs-structure-guide.md
   - ../03-workflows/doc-update-policy.md
+  - ../03-workflows/spec-workflow.md
   - ../04-automation/skill-evaluation-policy.md
   - ../04-automation/tmux-harness-architecture.md
 last_reviewed: 2026-03-27
@@ -43,6 +44,8 @@ last_reviewed: 2026-03-27
 - [ ] 필요 시 `docs/review/evaluation-criteria.md` 생성
 - [ ] `docs/reference/` 생성
 - [ ] 필요 시 `docs/adr/` 생성
+- [ ] 필요 시 `docs/specs/` 생성
+- [ ] 필요 시 `docs/features/` 생성
 
 ## Metadata
 
@@ -62,6 +65,8 @@ last_reviewed: 2026-03-27
 - [ ] triage 규칙 정의
 - [ ] 구현 규칙 정의
 - [ ] 리뷰 규칙 정의
+- [ ] spec과 functional spec 정본 위치 정의
+- [ ] business docs의 Google Docs 정본 위치 정의
 - [ ] PR 최소 규칙 정의
 - [ ] 복잡한 변경이면 code review harness 도입 여부 결정
 - [ ] review artifacts 저장 경로(`.review-artifacts/`) 결정
