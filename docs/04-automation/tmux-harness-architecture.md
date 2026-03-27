@@ -85,6 +85,7 @@ last_reviewed: 2026-03-27
 - `scripts/tmux/init-product.sh --config config/<product>.env --bootstrap-defaults`
 - `scripts/tmux/bootstrap-agent.sh --config config/<product>.env --agent claude <window>`
 - `scripts/tmux/new-task.sh --config config/<product>.env --agent claude <target> <slug>`
+- `scripts/tmux/start-task.sh --config config/<product>.env --agent codex --mode prompt <target> <slug>`
 - `scripts/tmux/handoff.sh --config config/<product>.env <window> <ticket-file>`
 - `scripts/tmux/review-task.sh --config config/<product>.env --agent codex <target> <slug>`
 - `scripts/tmux/status.sh --config config/<product>.env`

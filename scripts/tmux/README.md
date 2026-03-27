@@ -7,6 +7,7 @@
 - `init-product.sh --config <file> [--bootstrap-defaults]`
 - `bootstrap-agent.sh --config <file> --agent <claude|codex|gemini> <window>`
 - `new-task.sh --config <file> [--agent <claude|codex|gemini>] [--pane <index>] <target> <slug>`
+- `start-task.sh --config <file> [--agent <claude|codex|gemini>] <target> <slug>`
 - `handoff.sh --config <file> [--pane <index>] [--mode shell|prompt] <window> <ticket-file>`
 - `review-task.sh --config <file> [--agent <claude|codex|gemini>] [--pane <index>] <target> <slug>`
 - `status.sh --config <file>`
@@ -18,6 +19,8 @@
   - `scripts/tmux/init-product.sh --config config/<product>.env --bootstrap-defaults`
 - 새 task window + Codex 부팅:
   - `scripts/tmux/new-task.sh --config config/<product>.env --agent codex <target> <slug>`
+- 새 task window + handoff 생성 + Codex 부팅:
+  - `scripts/tmux/start-task.sh --config config/<product>.env --agent codex --mode prompt --goal "..." --done "..." <target> <slug>`
 - 리뷰 window + Gemini 부팅:
   - `scripts/tmux/review-task.sh --config config/<product>.env --agent gemini <target> <slug>`
 - worker pane에 task brief 전달:
