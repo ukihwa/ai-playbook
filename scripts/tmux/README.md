@@ -5,6 +5,8 @@
 ## Commands
 
 - `init-product.sh --config <file> [--bootstrap-defaults]`
+- `start-runtime.sh --config <file> [--wait] <fe|be|app>`
+- `stop-runtime.sh --config <file> <fe|be|app>`
 - `bootstrap-agent.sh --config <file> --agent <claude|codex|gemini> <window>`
 - `new-task.sh --config <file> [--agent <claude|codex|gemini>] [--pane <index>] <target> <slug>`
 - `start-task.sh --config <file> [--agent <claude|codex|gemini>] <target> <slug>`
@@ -20,12 +22,22 @@
 - 단일 명령 래퍼:
   - `soullink up`
   - `soullink up-bootstrap`
+  - `soullink dev`
+  - `soullink all`
+  - `soullink run <fe|be|app>`
+  - `soullink stop-run <fe|be|app>`
   - `soullink status`
   - `soullink start-task ...`
   - `soullink task-from-spec ...`
   - `soullink start-review ...`
 - 기본 세션 + 기본 Claude 창 부팅:
   - `scripts/tmux/init-product.sh --config config/<product>.env --bootstrap-defaults`
+- 기본 세션 + FE/BE 런타임 시작:
+  - `scripts/tmux/start-runtime.sh --config config/<product>.env --wait be`
+  - `scripts/tmux/start-runtime.sh --config config/<product>.env --wait fe`
+- 개별 런타임 시작/중지:
+  - `scripts/tmux/start-runtime.sh --config config/<product>.env app`
+  - `scripts/tmux/stop-runtime.sh --config config/<product>.env app`
 - 새 task window + Codex 부팅:
   - `scripts/tmux/new-task.sh --config config/<product>.env --agent codex <target> <slug>`
 - 새 task window + handoff 생성 + Codex 부팅:
@@ -62,6 +74,9 @@
 - `AGENT_CODEX_CMD`
 - `AGENT_GEMINI_CMD`
 - `RUN_FE_DIR`, `RUN_BE_DIR`, `RUN_APP_DIR`
+- `RUN_FE_CMD`, `RUN_BE_CMD`, `RUN_APP_CMD`
+- `RUN_FE_WAIT_PORTS`, `RUN_BE_WAIT_PORTS`, `RUN_APP_WAIT_PORTS`
+- `RUN_FE_WAIT_TIMEOUT`, `RUN_BE_WAIT_TIMEOUT`, `RUN_APP_WAIT_TIMEOUT`
 - `CLAUDE_FE_DIR`, `CLAUDE_BE_DIR`, `CLAUDE_APP_DIR`
 
 ## Design Rules
@@ -69,6 +84,8 @@
 - 특정 사용자 절대 경로를 스크립트 코드에 하드코딩하지 않습니다.
 - config 파일로 경로를 주입합니다.
 - 메인 triage, runtime, worker, review를 분리합니다.
+- `dev`와 `all`은 기본적으로 FE/BE 런타임을 올리고 readiness check를 기다립니다.
+- `app` 런타임은 더 무거울 수 있으므로 기본 자동 시작 대상에서 제외하고 필요할 때만 `run app`으로 올립니다.
 - task worktree 브랜치는 기본적으로 `codex/<target>/<slug>` 규칙을 사용합니다.
 - handoff는 task brief 파일을 기준으로 worker pane에 전달합니다.
 - 기본값은 `--mode shell`이며, 일반 셸 pane에서도 에러 없이 handoff 내용을 출력합니다.

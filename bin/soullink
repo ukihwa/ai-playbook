@@ -19,6 +19,10 @@ Usage: soullink <command> [args]
 Commands:
   up                     Create the base soullink tmux session
   up-bootstrap           Create the base session and bootstrap default Claude panes
+  dev                    Create the base session and start FE/BE runtimes
+  all                    Create the base session, bootstrap defaults, and start FE/BE runtimes
+  run <fe|be|app>        Start a configured runtime window
+  stop-run <fe|be|app>   Stop a configured runtime window
   status                 Show tmux and worktree status
   task <target> <slug>   Create a worker window and worktree
   start-task <target> <slug> [flags...]
@@ -47,6 +51,8 @@ need_script() {
 
 for script in \
 	"${TMUX_DIR}/init-product.sh" \
+	"${TMUX_DIR}/start-runtime.sh" \
+	"${TMUX_DIR}/stop-runtime.sh" \
 	"${TMUX_DIR}/status.sh" \
 	"${TMUX_DIR}/new-task.sh" \
 	"${TMUX_DIR}/start-task.sh" \
@@ -70,6 +76,22 @@ case "${COMMAND}" in
 		;;
 	up-bootstrap)
 		exec "${TMUX_DIR}/init-product.sh" --config "${CONFIG_FILE}" --bootstrap-defaults "$@"
+		;;
+	dev)
+		"${TMUX_DIR}/init-product.sh" --config "${CONFIG_FILE}" "$@"
+		"${TMUX_DIR}/start-runtime.sh" --config "${CONFIG_FILE}" --wait be
+		exec "${TMUX_DIR}/start-runtime.sh" --config "${CONFIG_FILE}" --wait fe
+		;;
+	all)
+		"${TMUX_DIR}/init-product.sh" --config "${CONFIG_FILE}" --bootstrap-defaults "$@"
+		"${TMUX_DIR}/start-runtime.sh" --config "${CONFIG_FILE}" --wait be
+		exec "${TMUX_DIR}/start-runtime.sh" --config "${CONFIG_FILE}" --wait fe
+		;;
+	run)
+		exec "${TMUX_DIR}/start-runtime.sh" --config "${CONFIG_FILE}" "$@"
+		;;
+	stop-run)
+		exec "${TMUX_DIR}/stop-runtime.sh" --config "${CONFIG_FILE}" "$@"
 		;;
 	status)
 		exec "${TMUX_DIR}/status.sh" --config "${CONFIG_FILE}" "$@"

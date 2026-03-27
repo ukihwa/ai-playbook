@@ -53,6 +53,8 @@ last_reviewed: 2026-03-27
 - task 단위로 worktree를 생성한다
 - 구현 세션은 가능하면 task 전용 worktree에서 실행한다
 - run window는 고정 repo 또는 대표 worktree를 기준으로 사용한다
+- 기본 `dev` 흐름은 FE/BE 런타임을 자동으로 부팅하고 readiness check를 기다린다
+- 무거운 앱 런타임은 기본 자동 부팅 대상에서 제외하고 명시적으로 올린다
 - 기본 브랜치 규칙은 `codex/<target>/<slug>`를 사용한다
 
 ## Handoff Rule
@@ -83,12 +85,20 @@ last_reviewed: 2026-03-27
 
 - `soullink up`
 - `soullink up-bootstrap`
+- `soullink dev`
+- `soullink all`
+- `soullink run <fe|be|app>`
+- `soullink stop-run <fe|be|app>`
 - `soullink status`
 - `soullink start-task ...`
 - `soullink task-from-spec ...`
 - `soullink start-review ...`
 - `scripts/tmux/init-product.sh --config config/<product>.env`
 - `scripts/tmux/init-product.sh --config config/<product>.env --bootstrap-defaults`
+- `scripts/tmux/start-runtime.sh --config config/<product>.env --wait be`
+- `scripts/tmux/start-runtime.sh --config config/<product>.env --wait fe`
+- `scripts/tmux/start-runtime.sh --config config/<product>.env app`
+- `scripts/tmux/stop-runtime.sh --config config/<product>.env app`
 - `scripts/tmux/bootstrap-agent.sh --config config/<product>.env --agent claude <window>`
 - `scripts/tmux/new-task.sh --config config/<product>.env --agent claude <target> <slug>`
 - `scripts/tmux/start-task.sh --config config/<product>.env --agent codex --mode prompt <target> <slug>`

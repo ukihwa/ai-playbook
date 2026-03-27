@@ -63,6 +63,15 @@ resolve_target_dir() {
 	printf '%s' "${value}"
 }
 
+resolve_named_var() {
+	local prefix="$1"
+	local suffix="$2"
+	local key
+	key="$(normalize_target_key "${suffix}")"
+	local var_name="${prefix}_${key}"
+	printf '%s' "${!var_name:-}"
+}
+
 target_branch_name() {
 	local target="$1"
 	local slug="$2"
@@ -119,6 +128,37 @@ wait_for_pane_command() {
 	while (( elapsed < timeout_seconds )); do
 		current="$(tmux display-message -p -t "${pane_target}" '#{pane_current_command}' 2>/dev/null || true)"
 		if [[ "${current}" == "${expected}" ]]; then
+			return 0
+		fi
+		sleep 1
+		((elapsed += 1))
+	done
+
+	return 1
+}
+
+wait_for_ports() {
+	local ports_csv="$1"
+	local timeout_seconds="${2:-45}"
+
+	[[ -n "${ports_csv}" ]] || return 0
+
+	IFS=',' read -r -a ports <<< "${ports_csv}"
+	local elapsed=0
+	local all_ready=""
+	local port=""
+
+	while (( elapsed < timeout_seconds )); do
+		all_ready="true"
+		for port in "${ports[@]}"; do
+			port="${port//[[:space:]]/}"
+			[[ -n "${port}" ]] || continue
+			if ! (echo >"/dev/tcp/127.0.0.1/${port}") >/dev/null 2>&1; then
+				all_ready="false"
+				break
+			fi
+		done
+		if [[ "${all_ready}" == "true" ]]; then
 			return 0
 		fi
 		sleep 1
