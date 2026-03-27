@@ -1,9 +1,13 @@
 # Scripts
 
-AI 협업 자동화에 사용하는 스크립트 골격을 저장하는 폴더입니다.
+AI 협업 자동화에 사용하는 실행 스크립트를 저장하는 폴더입니다.
 
 ## Directories
 
 - `tmux/`: 세션, window, worker orchestration
 - `helpers/`: 문서 생성, 검증, 상태 확인 보조 스크립트
 
+## Current State
+
+- `tmux/`는 실제로 실행 가능한 최소 하네스를 제공합니다.
+- 모든 스크립트는 `config/*.env`를 읽도록 설계되어 있습니다.

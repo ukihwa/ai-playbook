@@ -31,6 +31,7 @@ last_reviewed: 2026-03-27
 ## Session Model
 
 - 제품 또는 프로젝트 단위로 tmux session 1개
+- 세션/경로 정보는 `config/*.env`에서 주입한다
 
 ## Recommended Windows
 
@@ -52,6 +53,7 @@ last_reviewed: 2026-03-27
 - task 단위로 worktree를 생성한다
 - 구현 세션은 가능하면 task 전용 worktree에서 실행한다
 - run window는 고정 repo 또는 대표 worktree를 기준으로 사용한다
+- 기본 브랜치 규칙은 `codex/<target>/<slug>`를 사용한다
 
 ## Handoff Rule
 
@@ -76,3 +78,10 @@ last_reviewed: 2026-03-27
 - 그래도 길어지면 새 메인 세션으로 넘긴다
 - 상태 복구는 `CLAUDE.md`, `triage-status`, `backlog` 기준으로 한다
 
+## Baseline Commands
+
+- `scripts/tmux/init-product.sh --config config/<product>.env`
+- `scripts/tmux/new-task.sh --config config/<product>.env <target> <slug>`
+- `scripts/tmux/review-task.sh --config config/<product>.env <target> <slug>`
+- `scripts/tmux/status.sh --config config/<product>.env`
+- `scripts/tmux/cleanup-task.sh --config config/<product>.env --delete-worktree <target> <slug>`
