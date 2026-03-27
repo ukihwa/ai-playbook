@@ -12,7 +12,8 @@
 
 1. `01-principles/ai-collaboration-playbook.md`
 2. `02-docs/reference-resource-policy.md`
-3. `03-workflows/code-review-harness-workflow.md`
-4. `04-automation/tmux-harness-architecture.md`
-5. `04-automation/omc-usage-guide.md`
-6. `06-checklists/new-project-checklist.md`
+3. `03-workflows/doc-update-policy.md`
+4. `03-workflows/code-review-harness-workflow.md`
+5. `04-automation/tmux-harness-architecture.md`
+6. `04-automation/omc-usage-guide.md`
+7. `06-checklists/new-project-checklist.md`

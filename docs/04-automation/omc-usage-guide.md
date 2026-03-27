@@ -54,6 +54,14 @@ OMC는 오케스트레이션 레이어이고, 프로젝트 기준 문서는 `CLA
 - 구현은 worker 세션에서 수행한다.
 - 리뷰는 별도 세션으로 분리한다.
 - 기본 teammate는 `executor`로 시작하고, 필요 시 reviewer/architect를 추가한다.
+- `cross-verify` 같은 멀티모델 비교 스킬은 상시 기본값이 아니라 선택적 검증 단계로 둔다.
+
+## Optional Cross-Verification
+
+- `cross-verify`는 reviewer/qa 이후의 second opinion 용도로 붙인다.
+- `Codex CLI`가 설치되어 있으면 `Claude + Codex` 2축 검증부터 도입할 수 있다.
+- `Gemini CLI`까지 설치된 경우에만 3모델 교차검증을 고려한다.
+- Team orchestration과 충돌하지 않도록, 무조건 병렬 실행을 강제하지 않고 순차 fallback을 허용한다.
 
 ## Update Rules
 

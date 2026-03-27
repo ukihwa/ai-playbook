@@ -18,6 +18,7 @@ tags:
   - project
 related:
   - ../02-docs/docs-structure-guide.md
+  - ../03-workflows/doc-update-policy.md
   - ../04-automation/tmux-harness-architecture.md
 last_reviewed: 2026-03-27
 ---
@@ -69,3 +70,4 @@ last_reviewed: 2026-03-27
 - [ ] 필요 시 `.claude/agents/reviewer.md` 생성
 - [ ] 필요 시 `.claude/agents/qa-inspector.md` 생성
 - [ ] 필요 시 `.claude/skills/review-orchestrator/` 생성
+- [ ] 필요 시 `cross-verify`를 선택적 검증 스킬로 도입할지 판단
