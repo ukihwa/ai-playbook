@@ -17,6 +17,13 @@
 
 ## Common Flows
 
+- 단일 명령 래퍼:
+  - `soullink up`
+  - `soullink up-bootstrap`
+  - `soullink status`
+  - `soullink start-task ...`
+  - `soullink task-from-spec ...`
+  - `soullink start-review ...`
 - 기본 세션 + 기본 Claude 창 부팅:
   - `scripts/tmux/init-product.sh --config config/<product>.env --bootstrap-defaults`
 - 새 task window + Codex 부팅:

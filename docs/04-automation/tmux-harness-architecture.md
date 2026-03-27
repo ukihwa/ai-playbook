@@ -81,6 +81,12 @@ last_reviewed: 2026-03-27
 
 ## Baseline Commands
 
+- `soullink up`
+- `soullink up-bootstrap`
+- `soullink status`
+- `soullink start-task ...`
+- `soullink task-from-spec ...`
+- `soullink start-review ...`
 - `scripts/tmux/init-product.sh --config config/<product>.env`
 - `scripts/tmux/init-product.sh --config config/<product>.env --bootstrap-defaults`
 - `scripts/tmux/bootstrap-agent.sh --config config/<product>.env --agent claude <window>`
