@@ -7,3 +7,12 @@
 - 여기 들어오는 문서는 재사용 가능한 기준 문서여야 합니다.
 - 특정 프로젝트에만 해당하는 내용은 예시 문서 또는 `notes/`로 분리합니다.
 - 경로, 프로젝트명, 조직명에 강하게 묶이는 표현은 최소화합니다.
+
+## Suggested Read Order
+
+1. `01-principles/ai-collaboration-playbook.md`
+2. `02-docs/reference-resource-policy.md`
+3. `03-workflows/code-review-harness-workflow.md`
+4. `04-automation/tmux-harness-architecture.md`
+5. `04-automation/omc-usage-guide.md`
+6. `06-checklists/new-project-checklist.md`

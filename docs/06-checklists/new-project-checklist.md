@@ -37,6 +37,8 @@ last_reviewed: 2026-03-27
 - [ ] `docs/conventions/code-convention.md` 생성
 - [ ] `docs/architecture/overview.md` 생성
 - [ ] `docs/review/` 생성
+- [ ] 필요 시 `docs/review/design-intent.md` 생성
+- [ ] 필요 시 `docs/review/evaluation-criteria.md` 생성
 - [ ] `docs/reference/` 생성
 - [ ] 필요 시 `docs/adr/` 생성
 
@@ -59,4 +61,11 @@ last_reviewed: 2026-03-27
 - [ ] 구현 규칙 정의
 - [ ] 리뷰 규칙 정의
 - [ ] PR 최소 규칙 정의
+- [ ] 복잡한 변경이면 code review harness 도입 여부 결정
+- [ ] review artifacts 저장 경로(`.review-artifacts/`) 결정
 
+## Agents
+
+- [ ] 필요 시 `.claude/agents/reviewer.md` 생성
+- [ ] 필요 시 `.claude/agents/qa-inspector.md` 생성
+- [ ] 필요 시 `.claude/skills/review-orchestrator/` 생성
