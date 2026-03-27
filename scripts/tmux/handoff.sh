@@ -10,6 +10,7 @@ CONFIG_PATH=""
 PANE_INDEX="0"
 PRINT_ONLY="false"
 MODE="shell"
+INTERRUPT=""
 
 while [[ $# -gt 0 ]]; do
 	case "$1" in
@@ -25,6 +26,14 @@ while [[ $# -gt 0 ]]; do
 			MODE="$2"
 			shift 2
 			;;
+		--interrupt)
+			INTERRUPT="true"
+			shift
+			;;
+		--no-interrupt)
+			INTERRUPT="false"
+			shift
+			;;
 		--print-only)
 			PRINT_ONLY="true"
 			shift
@@ -35,7 +44,7 @@ while [[ $# -gt 0 ]]; do
 	esac
 done
 
-[[ $# -eq 2 ]] || die "usage: handoff.sh --config <file> [--pane <index>] [--mode shell|prompt] [--print-only] <window> <ticket-file>"
+[[ $# -eq 2 ]] || die "usage: handoff.sh --config <file> [--pane <index>] [--mode shell|prompt] [--interrupt|--no-interrupt] [--print-only] <window> <ticket-file>"
 
 WINDOW_NAME="$1"
 TICKET_FILE="$2"
@@ -47,6 +56,14 @@ tmux_window_exists "${WINDOW_NAME}" || die "tmux window '${WINDOW_NAME}' does no
 [[ -f "${TICKET_FILE}" ]] || die "ticket file not found: ${TICKET_FILE}"
 tmux list-panes -t "$(pane_path "${WINDOW_NAME}")" -F '#{pane_index}' | grep -Fxq "${PANE_INDEX}" || die "pane '${PANE_INDEX}' does not exist in window '${WINDOW_NAME}'"
 [[ "${MODE}" == "shell" || "${MODE}" == "prompt" ]] || die "mode must be 'shell' or 'prompt'"
+
+if [[ -z "${INTERRUPT}" ]]; then
+	if [[ "${MODE}" == "shell" ]]; then
+		INTERRUPT="true"
+	else
+		INTERRUPT="false"
+	fi
+fi
 
 PANE_TARGET="$(tmux_pane_target "${WINDOW_NAME}" "${PANE_INDEX}")"
 MESSAGE_FILE="$(mktemp)"
@@ -83,7 +100,9 @@ if [[ "${PRINT_ONLY}" == "true" ]]; then
 fi
 
 tmux load-buffer -b ai-playbook-handoff "${MESSAGE_FILE}"
-tmux send-keys -t "${PANE_TARGET}" C-c
+if [[ "${INTERRUPT}" == "true" ]]; then
+	tmux send-keys -t "${PANE_TARGET}" C-c
+fi
 tmux paste-buffer -t "${PANE_TARGET}" -b ai-playbook-handoff
 tmux send-keys -t "${PANE_TARGET}" C-m
 tmux delete-buffer -b ai-playbook-handoff >/dev/null 2>&1 || true
@@ -94,4 +113,5 @@ echo "session: ${TMUX_SESSION}"
 echo "window: ${WINDOW_NAME}"
 echo "pane: ${PANE_INDEX}"
 echo "mode: ${MODE}"
+echo "interrupt: ${INTERRUPT}"
 echo "ticket: ${TICKET_FILE}"
