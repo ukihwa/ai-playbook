@@ -35,6 +35,10 @@ tmux_has_session || die "tmux session '${TMUX_SESSION}' does not exist. run init
 
 WINDOW_NAME="${TARGET}-run"
 WINDOW_DIR="$(resolve_named_var "RUN" "${TARGET}_DIR")"
+WINDOW_PRE_CMD="$(resolve_named_var "RUN" "${TARGET}_PRE_CMD")"
+PRE_WAIT_PORTS="$(resolve_named_var "RUN" "${TARGET}_PRE_WAIT_PORTS")"
+PRE_WAIT_TIMEOUT="$(resolve_named_var "RUN" "${TARGET}_PRE_WAIT_TIMEOUT")"
+PRE_WAIT_TIMEOUT="${PRE_WAIT_TIMEOUT:-45}"
 WINDOW_CMD="$(resolve_named_var "RUN" "${TARGET}_CMD")"
 WAIT_PORTS="$(resolve_named_var "RUN" "${TARGET}_WAIT_PORTS")"
 WAIT_TIMEOUT="$(resolve_named_var "RUN" "${TARGET}_WAIT_TIMEOUT")"
@@ -46,13 +50,28 @@ WAIT_TIMEOUT="${WAIT_TIMEOUT:-45}"
 ensure_window "${WINDOW_NAME}" "${WINDOW_DIR}"
 tmux send-keys -t "$(pane_path "${WINDOW_NAME}").0" C-c
 tmux send-keys -t "$(pane_path "${WINDOW_NAME}").0" "cd ${WINDOW_DIR}" C-m
+if [[ -n "${WINDOW_PRE_CMD}" ]]; then
+	tmux send-keys -t "$(pane_path "${WINDOW_NAME}").0" "${WINDOW_PRE_CMD}" C-m
+fi
 tmux send-keys -t "$(pane_path "${WINDOW_NAME}").0" "${WINDOW_CMD}" C-m
 
 print_header "runtime started"
 echo "session: ${TMUX_SESSION}"
 echo "window: ${WINDOW_NAME}"
 echo "dir: ${WINDOW_DIR}"
+if [[ -n "${WINDOW_PRE_CMD}" ]]; then
+	echo "pre-command: ${WINDOW_PRE_CMD}"
+fi
 echo "command: ${WINDOW_CMD}"
+
+if [[ -n "${PRE_WAIT_PORTS}" ]]; then
+	echo "waiting for infra ports: ${PRE_WAIT_PORTS}"
+	if wait_for_ports "${PRE_WAIT_PORTS}" "${PRE_WAIT_TIMEOUT}"; then
+		echo "infra ready: ${PRE_WAIT_PORTS}"
+	else
+		echo "warning: infra ports not ready within ${PRE_WAIT_TIMEOUT}s: ${PRE_WAIT_PORTS}" >&2
+	fi
+fi
 
 if [[ "${WAIT}" == "true" && -n "${WAIT_PORTS}" ]]; then
 	echo "waiting for ports: ${WAIT_PORTS}"

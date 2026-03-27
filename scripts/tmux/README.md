@@ -75,6 +75,8 @@
 - `AGENT_GEMINI_CMD`
 - `RUN_FE_DIR`, `RUN_BE_DIR`, `RUN_APP_DIR`
 - `RUN_FE_CMD`, `RUN_BE_CMD`, `RUN_APP_CMD`
+- `RUN_FE_PRE_CMD`, `RUN_BE_PRE_CMD`, `RUN_APP_PRE_CMD`
+- `RUN_FE_PRE_WAIT_PORTS`, `RUN_BE_PRE_WAIT_PORTS`, `RUN_APP_PRE_WAIT_PORTS`
 - `RUN_FE_WAIT_PORTS`, `RUN_BE_WAIT_PORTS`, `RUN_APP_WAIT_PORTS`
 - `RUN_FE_WAIT_TIMEOUT`, `RUN_BE_WAIT_TIMEOUT`, `RUN_APP_WAIT_TIMEOUT`
 - `CLAUDE_FE_DIR`, `CLAUDE_BE_DIR`, `CLAUDE_APP_DIR`
@@ -86,6 +88,8 @@
 - 메인 triage, runtime, worker, review를 분리합니다.
 - `dev`와 `all`은 기본적으로 FE/BE 런타임을 올리고 readiness check를 기다립니다.
 - `app` 런타임은 더 무거울 수 있으므로 기본 자동 시작 대상에서 제외하고 필요할 때만 `run app`으로 올립니다.
+- 필요하면 runtime 시작 전에 `RUN_*_PRE_CMD`로 인프라를 먼저 보장할 수 있습니다.
+- 백엔드처럼 Docker 인프라가 필요한 경우 `RUN_BE_PRE_CMD`에서 Docker Desktop, db, redis를 먼저 준비한 뒤 앱을 실행합니다.
 - task worktree 브랜치는 기본적으로 `codex/<target>/<slug>` 규칙을 사용합니다.
 - handoff는 task brief 파일을 기준으로 worker pane에 전달합니다.
 - 기본값은 `--mode shell`이며, 일반 셸 pane에서도 에러 없이 handoff 내용을 출력합니다.

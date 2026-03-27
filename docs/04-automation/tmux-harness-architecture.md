@@ -55,6 +55,7 @@ last_reviewed: 2026-03-27
 - run window는 고정 repo 또는 대표 worktree를 기준으로 사용한다
 - 기본 `dev` 흐름은 FE/BE 런타임을 자동으로 부팅하고 readiness check를 기다린다
 - 무거운 앱 런타임은 기본 자동 부팅 대상에서 제외하고 명시적으로 올린다
+- runtime은 필요 시 앱 실행 전에 인프라 준비용 pre-command를 가질 수 있다
 - 기본 브랜치 규칙은 `codex/<target>/<slug>`를 사용한다
 
 ## Handoff Rule
