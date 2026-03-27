@@ -71,6 +71,7 @@ last_reviewed: 2026-03-27
 - 구현과 리뷰는 분리한다
 - 리뷰는 finding 중심으로 진행한다
 - 중요 변경은 교차검증을 고려한다
+- handoff는 worker가 셸 pane인지 AI 프롬프트 pane인지에 따라 안전 모드를 구분한다
 
 ## Rollover Rule
 
@@ -82,6 +83,7 @@ last_reviewed: 2026-03-27
 
 - `scripts/tmux/init-product.sh --config config/<product>.env`
 - `scripts/tmux/new-task.sh --config config/<product>.env <target> <slug>`
+- `scripts/tmux/handoff.sh --config config/<product>.env <window> <ticket-file>`
 - `scripts/tmux/review-task.sh --config config/<product>.env <target> <slug>`
 - `scripts/tmux/status.sh --config config/<product>.env`
 - `scripts/tmux/cleanup-task.sh --config config/<product>.env --delete-worktree <target> <slug>`

@@ -65,6 +65,7 @@ last_reviewed: 2026-03-27
 - [ ] triage 규칙 정의
 - [ ] 구현 규칙 정의
 - [ ] 리뷰 규칙 정의
+- [ ] worker handoff 템플릿과 전달 방식 정의
 - [ ] spec과 functional spec 정본 위치 정의
 - [ ] business docs의 Google Docs 정본 위치 정의
 - [ ] PR 최소 규칙 정의

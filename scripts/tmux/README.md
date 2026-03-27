@@ -6,6 +6,7 @@
 
 - `init-product.sh --config <file>`
 - `new-task.sh --config <file> <target> <slug>`
+- `handoff.sh --config <file> [--pane <index>] [--mode shell|prompt] <window> <ticket-file>`
 - `review-task.sh --config <file> <target> <slug>`
 - `status.sh --config <file>`
 - `cleanup-task.sh --config <file> [--delete-worktree] <target> <slug>`
@@ -38,3 +39,6 @@
 - config 파일로 경로를 주입합니다.
 - 메인 triage, runtime, worker, review를 분리합니다.
 - task worktree 브랜치는 기본적으로 `codex/<target>/<slug>` 규칙을 사용합니다.
+- handoff는 task brief 파일을 기준으로 worker pane에 전달합니다.
+- 기본값은 `--mode shell`이며, 일반 셸 pane에서도 에러 없이 handoff 내용을 출력합니다.
+- Claude/Codex/Gemini 프롬프트 pane에 직접 붙일 때만 `--mode prompt`를 사용합니다.

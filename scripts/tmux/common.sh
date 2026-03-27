@@ -95,6 +95,12 @@ pane_path() {
 	printf '%s:%s' "${TMUX_SESSION}" "${window_name}"
 }
 
+tmux_pane_target() {
+	local window_name="$1"
+	local pane_index="${2:-0}"
+	printf '%s.%s' "$(pane_path "${window_name}")" "${pane_index}"
+}
+
 ensure_two_panes() {
 	local window_name="$1"
 	local window_target
