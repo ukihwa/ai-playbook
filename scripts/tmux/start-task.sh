@@ -140,6 +140,9 @@ if [[ "${SKIP_HANDOFF}" == "false" ]]; then
 	fi
 
 	"${HELPER_DIR}/create-handoff.sh" "${create_args[@]}" >/dev/null
+	if [[ -n "${AGENT_NAME}" && "${PROMPT_MODE}" == "prompt" ]]; then
+		wait_for_pane_command "${WINDOW_NAME}" "${PANE_INDEX}" "${AGENT_NAME}" 8 || true
+	fi
 	"${SCRIPT_DIR}/handoff.sh" --config "${CONFIG_PATH}" --pane "${PANE_INDEX}" --mode "${PROMPT_MODE}" "${WINDOW_NAME}" "${HANDOFF_FILE}" >/dev/null
 fi
 

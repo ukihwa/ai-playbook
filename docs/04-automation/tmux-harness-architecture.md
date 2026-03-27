@@ -86,6 +86,7 @@ last_reviewed: 2026-03-27
 - `scripts/tmux/bootstrap-agent.sh --config config/<product>.env --agent claude <window>`
 - `scripts/tmux/new-task.sh --config config/<product>.env --agent claude <target> <slug>`
 - `scripts/tmux/start-task.sh --config config/<product>.env --agent codex --mode prompt <target> <slug>`
+- `scripts/tmux/start-task-from-spec.sh --config config/<product>.env --agent codex <target> <slug> /path/to/spec.md`
 - `scripts/tmux/handoff.sh --config config/<product>.env <window> <ticket-file>`
 - `scripts/tmux/review-task.sh --config config/<product>.env --agent codex <target> <slug>`
 - `scripts/tmux/start-review.sh --config config/<product>.env --agent gemini --mode prompt <target> <slug>`

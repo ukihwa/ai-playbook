@@ -106,6 +106,28 @@ tmux_pane_target() {
 	printf '%s.%s' "$(pane_path "${window_name}")" "${pane_index}"
 }
 
+wait_for_pane_command() {
+	local window_name="$1"
+	local pane_index="$2"
+	local expected="$3"
+	local timeout_seconds="${4:-8}"
+	local pane_target
+	pane_target="$(tmux_pane_target "${window_name}" "${pane_index}")"
+	local current=""
+	local elapsed=0
+
+	while (( elapsed < timeout_seconds )); do
+		current="$(tmux display-message -p -t "${pane_target}" '#{pane_current_command}' 2>/dev/null || true)"
+		if [[ "${current}" == "${expected}" ]]; then
+			return 0
+		fi
+		sleep 1
+		((elapsed += 1))
+	done
+
+	return 1
+}
+
 ensure_two_panes() {
 	local window_name="$1"
 	local window_target

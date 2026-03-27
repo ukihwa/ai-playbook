@@ -8,6 +8,7 @@
 - `bootstrap-agent.sh --config <file> --agent <claude|codex|gemini> <window>`
 - `new-task.sh --config <file> [--agent <claude|codex|gemini>] [--pane <index>] <target> <slug>`
 - `start-task.sh --config <file> [--agent <claude|codex|gemini>] <target> <slug>`
+- `start-task-from-spec.sh --config <file> [--agent <claude|codex|gemini>] <target> <slug> <spec-or-issue-file>`
 - `handoff.sh --config <file> [--pane <index>] [--mode shell|prompt] [--interrupt|--no-interrupt] <window> <ticket-file>`
 - `review-task.sh --config <file> [--agent <claude|codex|gemini>] [--pane <index>] <target> <slug>`
 - `start-review.sh --config <file> [--agent <claude|codex|gemini>] <target> <slug>`
@@ -22,6 +23,8 @@
   - `scripts/tmux/new-task.sh --config config/<product>.env --agent codex <target> <slug>`
 - 새 task window + handoff 생성 + Codex 부팅:
   - `scripts/tmux/start-task.sh --config config/<product>.env --agent codex --mode prompt --goal "..." --done "..." <target> <slug>`
+- spec 또는 GitHub issue 본문에서 바로 task 시작:
+  - `scripts/tmux/start-task-from-spec.sh --config config/<product>.env --agent codex <target> <slug> /path/to/spec.md`
 - 리뷰 window + Gemini 부팅:
   - `scripts/tmux/review-task.sh --config config/<product>.env --agent gemini <target> <slug>`
 - 리뷰 window + artifact 생성 + Gemini 부팅:
@@ -65,3 +68,4 @@
 - Claude/Codex/Gemini 프롬프트 pane에 직접 붙일 때만 `--mode prompt`를 사용합니다.
 - `shell` 모드에서는 기본적으로 `C-c`를 보내고, `prompt` 모드에서는 기본적으로 인터럽트를 보내지 않습니다.
 - agent bootstrap은 config에 정의된 CLI 명령을 사용합니다.
+- `start-task`와 `start-review`는 prompt 모드일 때 pane가 agent 프로세스로 전환될 때까지 잠시 기다린 뒤 handoff를 보냅니다.
