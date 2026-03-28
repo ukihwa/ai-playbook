@@ -1,6 +1,6 @@
 # Apply Dispatch
 
-Use this command when the task proposal has already been reviewed and should be executed.
+Use this command when the request should be executed immediately instead of going through the inbox watcher flow.
 
 ## Goal
 
@@ -29,6 +29,13 @@ ws dispatch soullink --text "$ARGUMENTS" --apply
 - slug
 - task vs review
 - handoff or review artifact path
+
+5. If the user prefers the safer inbox flow, recommend:
+
+```bash
+ws enqueue-dispatch soullink --text "$ARGUMENTS"
+ws dispatch-watch soullink --once
+```
 
 ## Safety
 

@@ -4,7 +4,7 @@ Use this command from the triage pane when the user gives a new requirement in n
 
 ## Goal
 
-Interpret the user's request, then run the shared dispatcher in propose-only mode so the operator can review the suggested target, slug, references, and document updates before execution.
+Interpret the user's request, store it in the dispatch inbox, and guide the operator to review the proposal produced by the watcher/dispatcher before execution.
 
 ## Steps
 
@@ -12,15 +12,12 @@ Interpret the user's request, then run the shared dispatcher in propose-only mod
 2. Run:
 
 ```bash
-ws dispatch soullink --text "$ARGUMENTS"
+ws enqueue-dispatch soullink --text "$ARGUMENTS"
 ```
 
-3. Summarize the proposal briefly:
-- target
-- slug
-- review_only
-- cross_verify_candidate
-- doc_updates
+3. Tell the operator:
+- the inbox file path that was created
+- to run `ws dispatch-watch soullink --once` for a one-shot proposal, or keep `ws dispatch-watch soullink` running in a watcher pane
 
 4. Do not apply automatically.
 
@@ -30,7 +27,7 @@ ws dispatch soullink --text "$ARGUMENTS"
 - If the user already gave a markdown spec path, prefer:
 
 ```bash
-ws dispatch soullink /absolute/path/to/request.md
+ws enqueue-dispatch soullink /absolute/path/to/request.md
 ```
 
-- If the proposal looks wrong, refine the wording or override `--target` / `--slug` explicitly in a follow-up command.
+- If the proposal looks wrong after watcher processing, refine the wording or use `ws dispatch ... --target ... --slug ...` explicitly.

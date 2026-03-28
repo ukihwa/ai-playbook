@@ -255,6 +255,7 @@ dispatcher는 proposal/apply 결과를 `DISPATCH_TICKET_ROOT` 아래 JSON 파일
 권장 흐름:
 
 1. triage에서 요구사항을 markdown 또는 text 파일로 저장
+   - 권장 명령: `workspace enqueue-dispatch <project> --text "..."`
 2. `workspace dispatch-watch <project>` 실행
 3. watcher가 inbox 파일을 읽고 `dispatch`를 호출
 4. proposal/apply 결과는 ticket ledger에 남김

@@ -30,6 +30,7 @@
   - `workspace status <project>`
   - `workspace queue <project>`
   - `workspace dispatch-watch <project>`
+  - `workspace enqueue-dispatch <project> --text "..."`
   - `workspace start-task <project> ...`
   - `workspace task-from-spec <project> ...`
   - `workspace dispatch <project> --text "..."`
@@ -60,6 +61,9 @@
 - 파일 inbox를 감시하며 자연어/markdown 요청 처리:
   - `scripts/tmux/dispatch-watch.sh --config config/<product>.env`
   - `scripts/tmux/dispatch-watch.sh --config config/<product>.env --apply`
+- triage 입력을 inbox 파일로 저장:
+  - `scripts/helpers/create-dispatch-request.sh --config config/<product>.env --text "..."`
+  - `workspace enqueue-dispatch <project> --text "..."`
 - 리뷰 window + Gemini 부팅:
   - `scripts/tmux/review-task.sh --config config/<product>.env --agent gemini <target> <slug>`
 - 리뷰 window + artifact 생성 + Gemini 부팅:
@@ -111,6 +115,7 @@
 - 전역 `up`, `dev`처럼 너무 짧은 이름은 셸/도구 충돌 가능성이 커서, 공통 런처는 `workspace` 또는 `ws`를 기본으로 사용합니다.
 - `dispatch`는 proposal/apply 결과를 `DISPATCH_TICKET_ROOT`에 JSON으로 남겨 다음 단계 오케스트레이터가 읽을 수 있게 합니다.
 - triage pane 자체를 직접 파싱하기보다, 요청을 `DISPATCH_INBOX_ROOT`의 markdown/text 파일로 떨어뜨리고 `dispatch-watch`가 그것을 처리하는 방식이 더 안정적입니다.
+- 실사용 UX는 `dispatch-task -> enqueue-dispatch -> dispatch-watch` 흐름으로 구성하는 편이 자연스럽습니다.
 - task worktree 브랜치는 기본적으로 `codex/<target>/<slug>` 규칙을 사용합니다.
 - handoff는 task brief 파일을 기준으로 worker pane에 전달합니다.
 - 기본값은 `--mode shell`이며, 일반 셸 pane에서도 에러 없이 handoff 내용을 출력합니다.
