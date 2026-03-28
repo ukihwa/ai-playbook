@@ -16,6 +16,8 @@
 - `start-review.sh --config <file> [--agent <claude|codex|gemini>] <target> <slug>`
 - `status.sh --config <file>`
 - `queue.sh --config <file> [--json] [--status <value>] [--target <value>] [--latest <n>] [--count]`
+- `history.sh --config <file> [--json] [--status <csv>] [--latest <n>]`
+- `report.sh --config <file> [--json]`
 - `apply-ticket.sh --config <file> [--agent <name>] [--mode <mode>] [--pane <index>] <ticket-file|target/slug|slug>`
 - `mark-ticket.sh --config <file> --status <value> [--note <text>] <ticket-file|target/slug|slug>`
 - `dispatch-watch.sh --config <file> [--apply] [--interval <seconds>] [--once]`
@@ -37,6 +39,8 @@
   - `workspace queue <project> --status proposed`
   - `workspace queue <project> --latest 5`
   - `workspace queue <project> --count`
+  - `workspace history <project>`
+  - `workspace report <project>`
   - `workspace apply-ticket <project> <ticket>`
   - `workspace mark-ticket <project> --status done <ticket>`
   - `workspace dispatch-watch <project>`
@@ -78,6 +82,9 @@
   - `workspace queue <project> --latest 5`
   - `workspace apply-ticket <project> backend/api`
   - `workspace mark-ticket <project> --status done backend/api`
+- 완료/보류 흐름 요약:
+  - `workspace history <project>`
+  - `workspace report <project>`
   - `workspace watch <project>`
   - `workspace watch <project> --apply`
 - triage 입력을 inbox 파일로 저장:

@@ -26,6 +26,8 @@ Commands:
   stop-run <project> <fe|be|app>  Stop a configured runtime window
   status <project>                Show tmux and worktree status
   queue <project>                 Show dispatch ticket queue
+  history <project>               Show recent done/blocked/canceled tickets
+  report <project>                Summarize dispatch ticket state
   apply-ticket <project> <id>     Execute a proposed dispatch ticket
   mark-ticket <project> <id>      Update a dispatch ticket status
   dispatch-watch <project>        Watch a dispatch inbox directory and enqueue requests
@@ -75,6 +77,8 @@ for script in \
 	"${TMUX_DIR}/stop-runtime.sh" \
 	"${TMUX_DIR}/status.sh" \
 	"${TMUX_DIR}/queue.sh" \
+	"${TMUX_DIR}/history.sh" \
+	"${TMUX_DIR}/report.sh" \
 	"${TMUX_DIR}/apply-ticket.sh" \
 	"${TMUX_DIR}/mark-ticket.sh" \
 	"${TMUX_DIR}/dispatch-watch.sh" \
@@ -148,6 +152,12 @@ case "${COMMAND}" in
 		;;
 	queue)
 		exec "${TMUX_DIR}/queue.sh" --config "${CONFIG_FILE}" "$@"
+		;;
+	history)
+		exec "${TMUX_DIR}/history.sh" --config "${CONFIG_FILE}" "$@"
+		;;
+	report)
+		exec "${TMUX_DIR}/report.sh" --config "${CONFIG_FILE}" "$@"
 		;;
 	apply-ticket)
 		exec "${TMUX_DIR}/apply-ticket.sh" --config "${CONFIG_FILE}" "$@"

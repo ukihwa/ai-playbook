@@ -95,6 +95,8 @@ last_reviewed: 2026-03-27
 - `workspace enqueue-dispatch <project> --text "..."`
 - `workspace queue <project> --status proposed`
 - `workspace queue <project> --latest 5`
+- `workspace history <project>`
+- `workspace report <project>`
 - `workspace apply-ticket <project> <ticket>`
 - `workspace mark-ticket <project> --status done <ticket>`
 - `workspace dispatch-watch <project>`
