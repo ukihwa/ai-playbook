@@ -5,6 +5,7 @@
 ## Commands
 
 - `init-product.sh --config <file> [--bootstrap-defaults]`
+- `../setup/init-project.sh <project> --root <absolute-path> [--primary-target <name>] [--primary-dir <path>]`
 - `start-runtime.sh --config <file> [--wait] <fe|be|app>`
 - `stop-runtime.sh --config <file> <fe|be|app>`
 - `bootstrap-agent.sh --config <file> --agent <claude|codex|gemini> <window>`
@@ -29,7 +30,8 @@
 ## Common Flows
 
 - 단일 명령 래퍼:
-  - `workspace up <project>`
+- `workspace up <project>`
+- `workspace init-project <project> --root /absolute/path/to/project`
   - `workspace up-bootstrap <project>`
   - `workspace dev <project>`
   - `workspace all <project>`
@@ -106,6 +108,7 @@
 
 - `config/example.env`
 - `config/soullink.env`
+- 새 프로젝트는 먼저 `workspace init-project <project> --root <absolute-path>`로 config 초안을 생성한 뒤 필요 시 수정합니다.
 
 필수 값:
 

@@ -30,6 +30,7 @@ last_reviewed: 2026-03-27
 ## Setup
 
 - [ ] 프로젝트 루트 확인
+- [ ] `ws init-project <project> --root <absolute-path> ...`로 기본 config와 triage 문서 생성
 - [ ] `OMC`를 로컬 프로젝트 기준으로 설정
 - [ ] `CLAUDE.md` 생성 또는 정리
 

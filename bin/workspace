@@ -18,6 +18,7 @@ Usage: workspace <command> <project> [args]
        ws <command> <project> [args]
 
 Commands:
+  init-project <project>          Create project config, docs, and triage commands
   up <project>                    Create the base tmux session
   up-bootstrap <project>          Create the base session and bootstrap default Claude panes
   dev <project>                   Create the base session and start FE/BE runtimes
@@ -72,6 +73,16 @@ list_projects() {
 		| sort
 }
 
+runtime_configured() {
+	local config_file="$1"
+	local runtime_name="$2"
+	local key
+	key="$(printf '%s' "${runtime_name}" | tr '[:lower:]-' '[:upper:]_')"
+	local value
+	value="$(grep -E "^RUN_${key}_CMD=" "${config_file}" | tail -n 1 | cut -d'=' -f2- || true)"
+	[[ -n "${value}" ]]
+}
+
 for script in \
 	"${TMUX_DIR}/init-product.sh" \
 	"${TMUX_DIR}/start-runtime.sh" \
@@ -86,6 +97,7 @@ for script in \
 	"${TMUX_DIR}/dispatch-watch.sh" \
 	"${TMUX_DIR}/start-watch.sh" \
 	"${TMUX_DIR}/stop-watch.sh" \
+	"${ROOT_DIR}/scripts/setup/init-project.sh" \
 	"${ROOT_DIR}/scripts/helpers/create-dispatch-request.sh" \
 	"${TMUX_DIR}/new-task.sh" \
 	"${TMUX_DIR}/start-task.sh" \
@@ -113,6 +125,17 @@ case "${COMMAND}" in
 		list_projects
 		exit 0
 		;;
+	init-project)
+		PROJECT="${1:-}"
+		[[ -n "${PROJECT}" ]] || {
+			echo "error: missing project name" >&2
+			echo >&2
+			usage >&2
+			exit 1
+		}
+		shift
+		exec "${ROOT_DIR}/scripts/setup/init-project.sh" "${PROJECT}" "$@"
+		;;
 esac
 
 PROJECT="${1:-}"
@@ -135,13 +158,23 @@ case "${COMMAND}" in
 		;;
 	dev)
 		"${TMUX_DIR}/init-product.sh" --config "${CONFIG_FILE}" "$@"
-		"${TMUX_DIR}/start-runtime.sh" --config "${CONFIG_FILE}" --wait be
-		exec "${TMUX_DIR}/start-runtime.sh" --config "${CONFIG_FILE}" --wait fe
+		if runtime_configured "${CONFIG_FILE}" be; then
+			"${TMUX_DIR}/start-runtime.sh" --config "${CONFIG_FILE}" --wait be
+		fi
+		if runtime_configured "${CONFIG_FILE}" fe; then
+			exec "${TMUX_DIR}/start-runtime.sh" --config "${CONFIG_FILE}" --wait fe
+		fi
+		exit 0
 		;;
 	all)
 		"${TMUX_DIR}/init-product.sh" --config "${CONFIG_FILE}" --bootstrap-defaults "$@"
-		"${TMUX_DIR}/start-runtime.sh" --config "${CONFIG_FILE}" --wait be
-		exec "${TMUX_DIR}/start-runtime.sh" --config "${CONFIG_FILE}" --wait fe
+		if runtime_configured "${CONFIG_FILE}" be; then
+			"${TMUX_DIR}/start-runtime.sh" --config "${CONFIG_FILE}" --wait be
+		fi
+		if runtime_configured "${CONFIG_FILE}" fe; then
+			exec "${TMUX_DIR}/start-runtime.sh" --config "${CONFIG_FILE}" --wait fe
+		fi
+		exit 0
 		;;
 	run)
 		exec "${TMUX_DIR}/start-runtime.sh" --config "${CONFIG_FILE}" "$@"
