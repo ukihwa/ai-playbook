@@ -16,6 +16,7 @@ TARGET_OVERRIDE=""
 SLUG_OVERRIDE=""
 TITLE_OVERRIDE=""
 PANE_INDEX="0"
+CONFIDENCE="0.55"
 
 while [[ $# -gt 0 ]]; do
 	case "$1" in
@@ -160,6 +161,24 @@ infer_cross_verify() {
 	[[ "${text}" == *"security"* || "${text}" == *"보안"* || "${text}" == *"auth"* || "${text}" == *"api"* || "${text}" == *"sdk"* || "${text}" == *"계약"* ]]
 }
 
+infer_confidence() {
+	local text="$1"
+	local score="0.55"
+	if [[ -n "${INPUT_FILE}" ]]; then
+		score="0.75"
+	fi
+	if [[ -n "${TARGET_OVERRIDE}" ]]; then
+		score="0.85"
+	fi
+	if [[ -n "${SLUG_OVERRIDE}" ]]; then
+		score="0.90"
+	fi
+	if infer_review_only "${text}" || infer_cross_verify "${text}"; then
+		score="0.80"
+	fi
+	printf '%s' "${score}"
+}
+
 INPUT_SUMMARY=""
 GOAL_TEXT=""
 IN_SCOPE_SECTION=""
@@ -199,6 +218,7 @@ CROSS_VERIFY="false"
 if infer_cross_verify "${INPUT_SUMMARY}"; then
 	CROSS_VERIFY="true"
 fi
+CONFIDENCE="$(infer_confidence "${INPUT_SUMMARY}")"
 
 TRIAGE_STATUS_DOC="${TRIAGE_DIR}/docs/tasks/triage-status.md"
 declare -a REFERENCES=()
@@ -206,9 +226,11 @@ declare -a IN_SCOPE=()
 declare -a OUT_OF_SCOPE=()
 declare -a DONE_CRITERIA=()
 declare -a REVIEW_FOCUS=()
+declare -a DOC_UPDATES=()
 
 if [[ -f "${TRIAGE_STATUS_DOC}" ]]; then
 	REFERENCES+=("${TRIAGE_STATUS_DOC}")
+	DOC_UPDATES+=("${TRIAGE_STATUS_DOC}")
 fi
 if [[ -n "${INPUT_FILE}" ]]; then
 	REFERENCES+=("${INPUT_FILE}")
@@ -251,6 +273,22 @@ if [[ "${CROSS_VERIFY}" == "true" ]]; then
 	REVIEW_FOCUS+=("Consider cross-verify because this request mentions high-risk external facts or contracts.")
 fi
 
+if [[ "${REVIEW_ONLY}" != "true" ]]; then
+	DOC_UPDATES+=("${TRIAGE_DIR}/docs/review/design-intent.md")
+	DOC_UPDATES+=("${TRIAGE_DIR}/docs/review/evaluation-criteria.md")
+fi
+case "${TARGET_NAME}" in
+	pro-web)
+		DOC_UPDATES+=("${TRIAGE_DIR}/docs/architecture/overview.md")
+		;;
+	backend)
+		DOC_UPDATES+=("${TRIAGE_DIR}/docs/reference/backend.md")
+		;;
+	app)
+		DOC_UPDATES+=("${TRIAGE_DIR}/docs/reference/pro-web.md")
+		;;
+esac
+
 print_list() {
 	local heading="$1"
 	local array_name="$2"
@@ -275,12 +313,14 @@ echo "mode: ${MODE}"
 echo "agent: ${AGENT_NAME}"
 echo "review_only: ${REVIEW_ONLY}"
 echo "cross_verify_candidate: ${CROSS_VERIFY}"
+echo "confidence: ${CONFIDENCE}"
 echo "goal: ${GOAL_TEXT}"
 print_list "in_scope" IN_SCOPE
 print_list "out_of_scope" OUT_OF_SCOPE
 print_list "done_criteria" DONE_CRITERIA
 print_list "references" REFERENCES
 print_list "review_focus" REVIEW_FOCUS
+print_list "doc_updates" DOC_UPDATES
 
 if [[ "${APPLY}" != "true" ]]; then
 	exit 0
