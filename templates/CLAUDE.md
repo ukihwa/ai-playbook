@@ -12,9 +12,10 @@ When starting work in this repository, read documents in this order:
 1. `docs/tasks/triage-status.md`
 2. `docs/conventions/code-convention.md`
 3. `docs/architecture/overview.md`
-4. Relevant files in `docs/architecture/`
-5. Relevant files in `docs/adr/`
-6. `docs/reference/*` only if needed
+4. `docs/03-workflows/triage-intake-policy.md` if it exists
+5. Relevant files in `docs/architecture/`
+6. Relevant files in `docs/adr/`
+7. `docs/reference/*` only if needed
 
 If a required document does not exist yet, say so briefly and continue with the best available source.
 

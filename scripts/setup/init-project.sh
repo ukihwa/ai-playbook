@@ -263,6 +263,7 @@ EOF
 
 write_file "${CONFIG_PATH}" "${CONFIG_CONTENT}"$'\n'
 
+copy_if_missing "${TEMPLATE_DIR}/CLAUDE.md" "${ROOT_PATH}/CLAUDE.md"
 copy_if_missing "${TEMPLATE_DIR}/docs/README.md" "${ROOT_PATH}/docs/README.md"
 copy_if_missing "${TEMPLATE_DIR}/docs/tasks/triage-status.md" "${ROOT_PATH}/docs/tasks/triage-status.md"
 
