@@ -71,6 +71,13 @@ ws dispatch <project> --text "..." --apply
 ws dispatch <project> /path/to/request.md --apply
 ```
 
+triage pane UX는 아래 custom command로 감싼다.
+
+```text
+/dispatch-task <natural language requirement>
+/apply-dispatch <natural language requirement or /absolute/path/to/spec.md>
+```
+
 기본값은 `propose-only` 이다.
 
 - `--apply` 없음:

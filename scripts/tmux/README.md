@@ -32,6 +32,9 @@
   - `workspace dispatch <project> --text "..."`
   - `workspace start-review <project> ...`
   - `ws up <project>`
+  - triage pane custom commands:
+    - `/dispatch-task ...`
+    - `/apply-dispatch ...`
 - 기본 세션 + 기본 Claude 창 부팅:
   - `scripts/tmux/init-product.sh --config config/<product>.env --bootstrap-defaults`
 - 기본 세션 + FE/BE 런타임 시작:
