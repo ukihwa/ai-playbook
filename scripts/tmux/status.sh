@@ -43,13 +43,16 @@ from pathlib import Path
 root = Path(sys.argv[1])
 counter = Counter()
 daily_report_allowed = {"applied-task", "applied-review", "done", "blocked"}
+latest = None
 
 if root.exists():
-    for path in root.glob("*.json"):
+    for path in sorted(root.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True):
         try:
             data = json.loads(path.read_text())
         except Exception:
             continue
+        if latest is None:
+            latest = data | {"ticket_file": str(path)}
         counter[data.get("status", "unknown")] += 1
 
 total = sum(counter.values())
@@ -59,6 +62,14 @@ for key in ["proposed", "needs-triage", "approved", "approved-task", "approved-r
         print(f" - {key}: {counter[key]}")
 daily_report_count = sum(counter.get(key, 0) for key in daily_report_allowed)
 print(f" - daily-report candidates: {daily_report_count}")
+if latest:
+    print(
+        f" - latest ticket: [{latest.get('status', 'unknown')}] "
+        f"{latest.get('target', '?')}/{latest.get('slug', '?')}"
+    )
+    goal = latest.get("goal")
+    if goal:
+        print(f"   - goal: {goal}")
 PY
 }
 
