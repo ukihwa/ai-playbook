@@ -241,7 +241,10 @@ dispatcher는 proposal/apply 결과를 `DISPATCH_TICKET_ROOT` 아래 JSON 파일
 후속 명령:
 
 - `workspace queue <project> --status proposed`
+- `workspace queue <project> --latest 5`
+- `workspace queue <project> --count`
 - `workspace apply-ticket <project> <ticket>`
+- `workspace mark-ticket <project> --status done <ticket>`
 
 ## Dispatch Inbox Watcher
 

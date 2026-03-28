@@ -15,8 +15,9 @@
 - `review-task.sh --config <file> [--agent <claude|codex|gemini>] [--pane <index>] <target> <slug>`
 - `start-review.sh --config <file> [--agent <claude|codex|gemini>] <target> <slug>`
 - `status.sh --config <file>`
-- `queue.sh --config <file> [--json] [--status <value>] [--target <value>]`
+- `queue.sh --config <file> [--json] [--status <value>] [--target <value>] [--latest <n>] [--count]`
 - `apply-ticket.sh --config <file> [--agent <name>] [--mode <mode>] [--pane <index>] <ticket-file|target/slug|slug>`
+- `mark-ticket.sh --config <file> --status <value> [--note <text>] <ticket-file|target/slug|slug>`
 - `dispatch-watch.sh --config <file> [--apply] [--interval <seconds>] [--once]`
 - `start-watch.sh --config <file> [--apply] [--interval <seconds>]`
 - `stop-watch.sh --config <file>`
@@ -34,7 +35,10 @@
   - `workspace status <project>`
   - `workspace queue <project>`
   - `workspace queue <project> --status proposed`
+  - `workspace queue <project> --latest 5`
+  - `workspace queue <project> --count`
   - `workspace apply-ticket <project> <ticket>`
+  - `workspace mark-ticket <project> --status done <ticket>`
   - `workspace dispatch-watch <project>`
   - `workspace enqueue-dispatch <project> --text "..."`
   - `workspace watch <project>`
@@ -71,7 +75,9 @@
   - `scripts/tmux/dispatch-watch.sh --config config/<product>.env --apply`
 - queue에서 proposal 필터링/실행:
   - `workspace queue <project> --status proposed`
+  - `workspace queue <project> --latest 5`
   - `workspace apply-ticket <project> backend/api`
+  - `workspace mark-ticket <project> --status done backend/api`
   - `workspace watch <project>`
   - `workspace watch <project> --apply`
 - triage 입력을 inbox 파일로 저장:

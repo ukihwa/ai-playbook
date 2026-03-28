@@ -10,6 +10,8 @@ CONFIG_PATH=""
 JSON_OUTPUT="false"
 STATUS_FILTER=""
 TARGET_FILTER=""
+LATEST_LIMIT=""
+COUNT_ONLY="false"
 
 while [[ $# -gt 0 ]]; do
 	case "$1" in
@@ -29,18 +31,26 @@ while [[ $# -gt 0 ]]; do
 			TARGET_FILTER="$2"
 			shift 2
 			;;
+		--latest)
+			LATEST_LIMIT="$2"
+			shift 2
+			;;
+		--count)
+			COUNT_ONLY="true"
+			shift
+			;;
 		*)
 			break
 			;;
 	esac
 done
 
-[[ $# -eq 0 ]] || die "usage: queue.sh --config <file> [--json] [--status <value>] [--target <value>]"
+[[ $# -eq 0 ]] || die "usage: queue.sh --config <file> [--json] [--status <value>] [--target <value>] [--latest <n>] [--count]"
 
 load_config "${CONFIG_PATH}"
 mkdir -p "${DISPATCH_TICKET_ROOT}"
 
-python3 - "${DISPATCH_TICKET_ROOT}" "${JSON_OUTPUT}" "${STATUS_FILTER}" "${TARGET_FILTER}" <<'PY'
+python3 - "${DISPATCH_TICKET_ROOT}" "${JSON_OUTPUT}" "${STATUS_FILTER}" "${TARGET_FILTER}" "${LATEST_LIMIT}" "${COUNT_ONLY}" <<'PY'
 import json
 import sys
 from pathlib import Path
@@ -49,6 +59,8 @@ root = Path(sys.argv[1])
 json_output = sys.argv[2] == "true"
 status_filter = sys.argv[3]
 target_filter = sys.argv[4]
+latest_limit = int(sys.argv[5]) if sys.argv[5] else None
+count_only = sys.argv[6] == "true"
 
 items = []
 for path in sorted(root.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True):
@@ -63,8 +75,15 @@ for path in sorted(root.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse
         continue
     items.append(data)
 
+if latest_limit is not None:
+    items = items[:latest_limit]
+
 if json_output:
     print(json.dumps(items, ensure_ascii=False))
+    raise SystemExit(0)
+
+if count_only:
+    print(len(items))
     raise SystemExit(0)
 
 print("== dispatch queue ==")
