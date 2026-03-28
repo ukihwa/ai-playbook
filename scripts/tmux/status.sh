@@ -59,6 +59,41 @@ for key in ["proposed", "needs-triage", "approved", "applied-task", "applied-rev
 PY
 }
 
+print_intake_summary() {
+	python3 - "${INTAKE_AUDIT_ROOT}" <<'PY'
+import json
+import sys
+from collections import Counter
+from pathlib import Path
+
+root = Path(sys.argv[1])
+items = []
+
+if root.exists():
+    for path in sorted(root.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True):
+        try:
+            data = json.loads(path.read_text())
+        except Exception:
+            continue
+        items.append(data)
+
+counter = Counter(item.get("classification", "unknown") for item in items)
+total = sum(counter.values())
+recent = items[:10]
+recent_counter = Counter(item.get("classification", "unknown") for item in recent)
+
+print(f" - total inputs: {total}")
+for key in ["actionable", "ignore", "unknown"]:
+    if counter.get(key):
+        print(f" - {key}: {counter[key]}")
+
+if recent:
+    actionable = recent_counter.get("actionable", 0)
+    ignore = recent_counter.get("ignore", 0)
+    print(f" - recent(10): actionable={actionable}, ignore={ignore}")
+PY
+}
+
 print_header "config"
 echo "product: ${PRODUCT_NAME}"
 echo "session: ${TMUX_SESSION}"
@@ -123,3 +158,6 @@ fi
 
 print_header "dispatch"
 print_dispatch_summary
+
+print_header "intake"
+print_intake_summary
