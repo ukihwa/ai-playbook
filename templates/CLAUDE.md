@@ -36,6 +36,11 @@ If a required document does not exist yet, say so briefly and continue with the 
 
 - Start with the lightest-weight path that preserves quality.
 - For ambiguous requests, clarify scope through triage before broad implementation.
+- In the triage session, plain natural-language implementation requests should be treated as dispatch candidates even if the user does not explicitly call a slash command.
+- The default internal action for a plain implementation request is `ws intake <project> --text "<original request>"`.
+- Do not turn greetings, thanks, or general chat into tickets.
+- If a request is low-risk and matches project auto-apply policy, let the intake flow auto-apply it.
+- If the request is ambiguous, high-risk, review-only, or blocked by policy, let the intake flow escalate it to `needs-triage`.
 - Separate authoring from approval: implementation first, review second.
 - For substantial changes, update docs that materially affect onboarding or future implementation.
 - Keep this file short. Put detailed guidance in `docs/` rather than expanding this file aggressively.
