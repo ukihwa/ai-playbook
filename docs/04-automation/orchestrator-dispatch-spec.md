@@ -39,6 +39,26 @@ last_reviewed: 2026-03-28
 
 즉 orchestrator는 직접 구현을 하지 않고, 적절한 `workspace` 명령을 선택하고 필요한 입력을 채운다.
 
+## Reference Patterns
+
+공개 orchestration 레퍼런스로는 `agentinc` 같은 구조가 참고할 만하다.
+
+- role bundle
+  - agent 단위로 prompt, settings, skills, hooks, MCP를 묶는다
+- headless command
+  - interactive 모드와 print/JSON 모드를 함께 둔다
+- daemon + ticket lifecycle
+  - `blocked -> ready -> in_progress -> completed/failed`
+- shared project config
+  - `.agentinc/`를 git에 커밋해서 팀이 같은 orchestration 자산을 공유한다
+
+현재 `ai-playbook`은 이를 그대로 복제하지 않고 아래만 흡수한다.
+
+- `workspace/ws`를 단일 진입점으로 유지
+- `dispatch`는 propose-only / apply를 분리
+- 향후 daemon mode가 필요하면 ticket queue를 별도 레이어로 추가
+- 역할 번들은 `workspace target + CLAUDE/skills/commands` 조합으로 표현
+
 ## Supported Inputs
 
 dispatcher는 아래 입력 형태를 지원해야 한다.
@@ -67,6 +87,7 @@ dispatcher는 아래 입력 형태를 지원해야 한다.
 ```bash
 ws dispatch <project> --text "..."
 ws dispatch <project> /path/to/request.md
+ws dispatch <project> --json --text "..."
 ws dispatch <project> --text "..." --apply
 ws dispatch <project> /path/to/request.md --apply
 ```
@@ -84,6 +105,8 @@ triage pane UX는 아래 custom command로 감싼다.
   - 구조화 결과를 보여주고 종료
 - `--apply` 있음:
   - 판단 결과에 따라 `workspace start-task ...` 또는 `workspace start-review ...`를 실제 실행
+- `--json`:
+  - daemon, watcher, 상위 automation이 읽기 쉬운 machine-readable 출력 제공
 
 ## Output Schema
 

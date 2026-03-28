@@ -17,6 +17,7 @@ SLUG_OVERRIDE=""
 TITLE_OVERRIDE=""
 PANE_INDEX="0"
 CONFIDENCE="0.55"
+JSON_OUTPUT="false"
 
 while [[ $# -gt 0 ]]; do
 	case "$1" in
@@ -55,6 +56,10 @@ while [[ $# -gt 0 ]]; do
 		--pane)
 			PANE_INDEX="$2"
 			shift 2
+			;;
+		--json)
+			JSON_OUTPUT="true"
+			shift
 			;;
 		*)
 			break
@@ -302,6 +307,53 @@ print_list() {
 	local item=""
 	eval "for item in \"\${${array_name}[@]}\"; do echo \"  - \${item}\"; done"
 }
+
+json_escape() {
+	printf '%s' "$1" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))'
+}
+
+print_json_array() {
+	local array_name="$1"
+	local count
+	eval "count=\${#${array_name}[@]}"
+	python3 - "$array_name" <<'PY'
+import json
+import os
+import subprocess
+import sys
+
+array_name = sys.argv[1]
+bash = f'eval \'printf "%s\\n" "${{{array_name}[@]}}"\''
+result = subprocess.run(["bash", "-lc", bash], capture_output=True, text=True, env=os.environ)
+items = [line for line in result.stdout.splitlines() if line]
+print(json.dumps(items), end="")
+PY
+}
+
+if [[ "${JSON_OUTPUT}" == "true" ]]; then
+	printf '{'
+	printf '"project":%s,' "$(json_escape "${PRODUCT_NAME}")"
+	printf '"target":%s,' "$(json_escape "${TARGET_NAME}")"
+	printf '"slug":%s,' "$(json_escape "${SLUG_VALUE}")"
+	printf '"title":%s,' "$(json_escape "${TITLE_VALUE}")"
+	printf '"apply":%s,' "${APPLY}"
+	printf '"mode":%s,' "$(json_escape "${MODE}")"
+	printf '"agent":%s,' "$(json_escape "${AGENT_NAME}")"
+	printf '"review_only":%s,' "${REVIEW_ONLY}"
+	printf '"cross_verify_candidate":%s,' "${CROSS_VERIFY}"
+	printf '"confidence":%s,' "$(json_escape "${CONFIDENCE}")"
+	printf '"goal":%s,' "$(json_escape "${GOAL_TEXT}")"
+	printf '"in_scope":'; print_json_array IN_SCOPE; printf ','
+	printf '"out_of_scope":'; print_json_array OUT_OF_SCOPE; printf ','
+	printf '"done_criteria":'; print_json_array DONE_CRITERIA; printf ','
+	printf '"references":'; print_json_array REFERENCES; printf ','
+	printf '"review_focus":'; print_json_array REVIEW_FOCUS; printf ','
+	printf '"doc_updates":'; print_json_array DOC_UPDATES
+	printf '}\n'
+	if [[ "${APPLY}" != "true" ]]; then
+		exit 0
+	fi
+fi
 
 print_header "dispatch proposal"
 echo "project: ${PRODUCT_NAME}"
