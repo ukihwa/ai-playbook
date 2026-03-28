@@ -42,6 +42,7 @@ from pathlib import Path
 
 root = Path(sys.argv[1])
 counter = Counter()
+daily_report_allowed = {"applied-task", "applied-review", "done", "blocked"}
 
 if root.exists():
     for path in root.glob("*.json"):
@@ -53,9 +54,11 @@ if root.exists():
 
 total = sum(counter.values())
 print(f" - total tickets: {total}")
-for key in ["proposed", "needs-triage", "approved", "applied-task", "applied-review", "done", "blocked", "rejected"]:
+for key in ["proposed", "needs-triage", "approved", "approved-task", "approved-review", "applied-task", "applied-review", "done", "blocked", "rejected"]:
     if counter.get(key):
         print(f" - {key}: {counter[key]}")
+daily_report_count = sum(counter.get(key, 0) for key in daily_report_allowed)
+print(f" - daily-report candidates: {daily_report_count}")
 PY
 }
 
