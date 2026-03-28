@@ -90,6 +90,8 @@ ws dispatch <project> /path/to/request.md
 ws dispatch <project> --json --text "..."
 ws dispatch <project> --text "..." --apply
 ws dispatch <project> /path/to/request.md --apply
+ws dispatch-watch <project>
+ws dispatch-watch <project> --apply
 ```
 
 triage pane UX는 아래 custom command로 감싼다.
@@ -107,6 +109,8 @@ triage pane UX는 아래 custom command로 감싼다.
   - 판단 결과에 따라 `workspace start-task ...` 또는 `workspace start-review ...`를 실제 실행
 - `--json`:
   - daemon, watcher, 상위 automation이 읽기 쉬운 machine-readable 출력 제공
+
+`dispatch-watch`는 triage 입력이 파일 inbox로 떨어졌을 때 이를 자동으로 처리하는 watcher 레이어다.
 
 ## Output Schema
 
@@ -231,8 +235,37 @@ dispatcher는 proposal/apply 결과를 `DISPATCH_TICKET_ROOT` 아래 JSON 파일
 - 목적:
   - audit trail
   - daemon/heartbeat input
-  - stale task detection
-  - review queue seed
+- stale task detection
+- review queue seed
+
+## Dispatch Inbox Watcher
+
+직접 tmux pane 텍스트를 스크레이핑하는 대신, triage 입력을 파일로 안정적으로 내리고 watcher가 처리한다.
+
+- inbox root:
+  - `DISPATCH_INBOX_ROOT`
+- supported files:
+  - `*.md`
+  - `*.txt`
+- processed:
+  - `processed/`
+- failed:
+  - `failed/`
+
+권장 흐름:
+
+1. triage에서 요구사항을 markdown 또는 text 파일로 저장
+2. `workspace dispatch-watch <project>` 실행
+3. watcher가 inbox 파일을 읽고 `dispatch`를 호출
+4. proposal/apply 결과는 ticket ledger에 남김
+
+이 방식의 장점:
+
+- stable input boundary
+- audit trail
+- replayability
+- watcher/daemon 확장 용이
+- pane scraping보다 안전함
 
 ## Apply Phase Behavior
 
@@ -277,6 +310,7 @@ workspace start-review <project> \
 3. target/slug 제안
 4. `workspace start-task` 호출 스펙 생성
 5. `--apply` 시 실제 실행
+6. 필요 시 `dispatch-watch`로 file inbox를 자동 처리
 
 ## What This Does Not Do Yet
 

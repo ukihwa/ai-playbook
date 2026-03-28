@@ -15,6 +15,7 @@
 - `review-task.sh --config <file> [--agent <claude|codex|gemini>] [--pane <index>] <target> <slug>`
 - `start-review.sh --config <file> [--agent <claude|codex|gemini>] <target> <slug>`
 - `status.sh --config <file>`
+- `dispatch-watch.sh --config <file> [--apply] [--interval <seconds>] [--once]`
 - `cleanup-task.sh --config <file> [--delete-worktree] <target> <slug>`
 
 ## Common Flows
@@ -28,10 +29,12 @@
   - `workspace stop-run <project> <fe|be|app>`
   - `workspace status <project>`
   - `workspace queue <project>`
+  - `workspace dispatch-watch <project>`
   - `workspace start-task <project> ...`
   - `workspace task-from-spec <project> ...`
   - `workspace dispatch <project> --text "..."`
   - `workspace queue <project> --json`
+  - `workspace dispatch-watch <project> --once`
   - `workspace start-review <project> ...`
   - `ws up <project>`
   - triage pane custom commands:
@@ -54,6 +57,9 @@
 - 자연어 또는 markdown에서 task 제안/실행:
   - `scripts/tmux/dispatch.sh --config config/<product>.env --text "..." `
   - `scripts/tmux/dispatch.sh --config config/<product>.env /path/to/request.md --apply`
+- 파일 inbox를 감시하며 자연어/markdown 요청 처리:
+  - `scripts/tmux/dispatch-watch.sh --config config/<product>.env`
+  - `scripts/tmux/dispatch-watch.sh --config config/<product>.env --apply`
 - 리뷰 window + Gemini 부팅:
   - `scripts/tmux/review-task.sh --config config/<product>.env --agent gemini <target> <slug>`
 - 리뷰 window + artifact 생성 + Gemini 부팅:
@@ -90,6 +96,7 @@
 - `RUN_FE_WAIT_PORTS`, `RUN_BE_WAIT_PORTS`, `RUN_APP_WAIT_PORTS`
 - `RUN_FE_WAIT_TIMEOUT`, `RUN_BE_WAIT_TIMEOUT`, `RUN_APP_WAIT_TIMEOUT`
 - `DISPATCH_TICKET_ROOT`
+- `DISPATCH_INBOX_ROOT`
 - `CLAUDE_FE_DIR`, `CLAUDE_BE_DIR`, `CLAUDE_APP_DIR`
 
 ## Design Rules
@@ -103,6 +110,7 @@
 - 백엔드처럼 Docker 인프라가 필요한 경우 `RUN_BE_PRE_CMD`에서 Docker Desktop, db, redis를 먼저 준비한 뒤 앱을 실행합니다.
 - 전역 `up`, `dev`처럼 너무 짧은 이름은 셸/도구 충돌 가능성이 커서, 공통 런처는 `workspace` 또는 `ws`를 기본으로 사용합니다.
 - `dispatch`는 proposal/apply 결과를 `DISPATCH_TICKET_ROOT`에 JSON으로 남겨 다음 단계 오케스트레이터가 읽을 수 있게 합니다.
+- triage pane 자체를 직접 파싱하기보다, 요청을 `DISPATCH_INBOX_ROOT`의 markdown/text 파일로 떨어뜨리고 `dispatch-watch`가 그것을 처리하는 방식이 더 안정적입니다.
 - task worktree 브랜치는 기본적으로 `codex/<target>/<slug>` 규칙을 사용합니다.
 - handoff는 task brief 파일을 기준으로 worker pane에 전달합니다.
 - 기본값은 `--mode shell`이며, 일반 셸 pane에서도 에러 없이 handoff 내용을 출력합니다.
