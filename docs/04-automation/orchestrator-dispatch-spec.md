@@ -245,6 +245,7 @@ dispatcher는 proposal/apply 결과를 `DISPATCH_TICKET_ROOT` 아래 JSON 파일
 - `workspace queue <project> --count`
 - `workspace history <project>`
 - `workspace report <project>`
+- `workspace daily-report <project>`
 - `workspace apply-ticket <project> <ticket>`
 - `workspace mark-ticket <project> --status done <ticket>`
 

@@ -18,6 +18,7 @@
 - `queue.sh --config <file> [--json] [--status <value>] [--target <value>] [--latest <n>] [--count]`
 - `history.sh --config <file> [--json] [--status <csv>] [--latest <n>]`
 - `report.sh --config <file> [--json]`
+- `daily-report.sh --config <file> [--json] [--latest <n>] [--include-proposed]`
 - `apply-ticket.sh --config <file> [--agent <name>] [--mode <mode>] [--pane <index>] <ticket-file|target/slug|slug>`
 - `mark-ticket.sh --config <file> --status <value> [--note <text>] <ticket-file|target/slug|slug>`
 - `dispatch-watch.sh --config <file> [--apply] [--interval <seconds>] [--once]`
@@ -41,6 +42,7 @@
   - `workspace queue <project> --count`
   - `workspace history <project>`
   - `workspace report <project>`
+  - `workspace daily-report <project>`
   - `workspace apply-ticket <project> <ticket>`
   - `workspace mark-ticket <project> --status done <ticket>`
   - `workspace dispatch-watch <project>`
@@ -85,6 +87,7 @@
 - 완료/보류 흐름 요약:
   - `workspace history <project>`
   - `workspace report <project>`
+  - `workspace daily-report <project>`
   - `workspace watch <project>`
   - `workspace watch <project> --apply`
 - triage 입력을 inbox 파일로 저장:

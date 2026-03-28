@@ -97,6 +97,7 @@ last_reviewed: 2026-03-27
 - `workspace queue <project> --latest 5`
 - `workspace history <project>`
 - `workspace report <project>`
+- `workspace daily-report <project>`
 - `workspace apply-ticket <project> <ticket>`
 - `workspace mark-ticket <project> --status done <ticket>`
 - `workspace dispatch-watch <project>`
