@@ -21,3 +21,4 @@
 9. `04-automation/orchestrator-dispatch-spec.md`
 10. `04-automation/omc-usage-guide.md`
 11. `06-checklists/new-project-checklist.md`
+12. `06-checklists/project-bootstrap-rehearsal.md`

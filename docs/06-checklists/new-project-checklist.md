@@ -22,6 +22,7 @@ related:
   - ../03-workflows/spec-workflow.md
   - ../04-automation/skill-evaluation-policy.md
   - ../04-automation/tmux-harness-architecture.md
+  - ./project-bootstrap-rehearsal.md
 last_reviewed: 2026-03-27
 ---
 
@@ -31,6 +32,7 @@ last_reviewed: 2026-03-27
 
 - [ ] 프로젝트 루트 확인
 - [ ] `ws init-project <project> --root <absolute-path> ...`로 기본 config와 triage 문서 생성
+- [ ] `project-bootstrap-rehearsal.md` 기준으로 smoke test 수행
 - [ ] `OMC`를 로컬 프로젝트 기준으로 설정
 - [ ] `CLAUDE.md` 생성 또는 정리
 
