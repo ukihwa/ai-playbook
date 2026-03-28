@@ -26,6 +26,8 @@ Commands:
   run <project> <fe|be|app>       Start a configured runtime window
   stop-run <project> <fe|be|app>  Stop a configured runtime window
   status <project>                Show tmux and worktree status
+  intake-history <project>        Show recent intake classification decisions
+  intake-report <project>         Summarize intake classification decisions
   queue <project>                 Show dispatch ticket queue
   history <project>               Show recent done/blocked/canceled tickets
   report <project>                Summarize dispatch ticket state
@@ -92,6 +94,8 @@ for script in \
 	"${TMUX_DIR}/start-runtime.sh" \
 	"${TMUX_DIR}/stop-runtime.sh" \
 	"${TMUX_DIR}/status.sh" \
+	"${TMUX_DIR}/intake-history.sh" \
+	"${TMUX_DIR}/intake-report.sh" \
 	"${TMUX_DIR}/queue.sh" \
 	"${TMUX_DIR}/history.sh" \
 	"${TMUX_DIR}/report.sh" \
@@ -192,6 +196,12 @@ case "${COMMAND}" in
 		;;
 	status)
 		exec "${TMUX_DIR}/status.sh" --config "${CONFIG_FILE}" "$@"
+		;;
+	intake-history)
+		exec "${TMUX_DIR}/intake-history.sh" --config "${CONFIG_FILE}" "$@"
+		;;
+	intake-report)
+		exec "${TMUX_DIR}/intake-report.sh" --config "${CONFIG_FILE}" "$@"
 		;;
 	queue)
 		exec "${TMUX_DIR}/queue.sh" --config "${CONFIG_FILE}" "$@"

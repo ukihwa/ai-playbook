@@ -83,6 +83,7 @@ case "${MODE_VALUE}" in
 esac
 
 load_config "${CONFIG_PATH}"
+mkdir -p "${INTAKE_AUDIT_ROOT}"
 
 RAW_INPUT=""
 if [[ -n "${TEXT_VALUE}" ]]; then
@@ -171,6 +172,24 @@ else
 fi
 
 if [[ "${CLASSIFICATION_VALUE}" != "actionable" ]]; then
+	AUDIT_FILE="${INTAKE_AUDIT_ROOT}/$(date +%Y%m%d-%H%M%S)-ignore.json"
+	python3 - "${AUDIT_FILE}" "${PRODUCT_NAME}" "${MODE_VALUE}" "${REASON_VALUE}" "${RAW_INPUT}" <<'PY'
+import json
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+
+path = Path(sys.argv[1])
+payload = {
+    "project": sys.argv[2],
+    "classification": "ignore",
+    "mode": sys.argv[3],
+    "reason": sys.argv[4],
+    "request": sys.argv[5],
+    "created_at": datetime.now(timezone.utc).isoformat(),
+}
+path.write_text(json.dumps(payload, ensure_ascii=False))
+PY
 	if [[ "${JSON_OUTPUT}" == "true" ]]; then
 		printf '{"classification":"ignore","reason":"%s"}\n' "${REASON_VALUE}"
 	else
@@ -203,6 +222,25 @@ case "${MODE_VALUE}" in
 esac
 
 "${WATCH_CMD[@]}"
+AUDIT_FILE="${INTAKE_AUDIT_ROOT}/$(date +%Y%m%d-%H%M%S)-actionable.json"
+python3 - "${AUDIT_FILE}" "${PRODUCT_NAME}" "${MODE_VALUE}" "${REASON_VALUE}" "${RAW_INPUT}" "${REQUEST_FILE}" <<'PY'
+import json
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+
+path = Path(sys.argv[1])
+payload = {
+    "project": sys.argv[2],
+    "classification": "actionable",
+    "mode": sys.argv[3],
+    "reason": sys.argv[4],
+    "request": sys.argv[5],
+    "request_file": sys.argv[6],
+    "created_at": datetime.now(timezone.utc).isoformat(),
+}
+path.write_text(json.dumps(payload, ensure_ascii=False))
+PY
 if [[ "${JSON_OUTPUT}" == "true" ]]; then
 	python3 - "${REQUEST_FILE}" "${MODE_VALUE}" <<'PY'
 import json, sys

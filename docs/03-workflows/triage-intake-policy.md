@@ -72,6 +72,20 @@ ws intake <project> --text "<original request>"
 - review-only, cross-verify candidate, target ambiguity, high-risk
   - `needs-triage`로 올린다
 
+## Observation Loop
+
+triage 휴리스틱은 한 번 정하고 끝내지 않는다. 실제 사용 중 아래를 주기적으로 확인해 오탐과 누락을 줄인다.
+
+- `workspace intake-history <project>`
+- `workspace intake-history <project> --classification ignore`
+- `workspace intake-report <project>`
+
+이 로그는 다음을 보는 데 쓴다.
+
+- 인사나 잡담이 실수로 actionable로 들어갔는지
+- 실제 작업 요청이 ignore로 버려졌는지
+- 어떤 `reason`이 가장 자주 나오는지
+
 ## Anti-Patterns
 
 - 모든 자연어를 ticket으로 만드는 것

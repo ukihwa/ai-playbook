@@ -16,6 +16,8 @@
 - `review-task.sh --config <file> [--agent <claude|codex|gemini>] [--pane <index>] <target> <slug>`
 - `start-review.sh --config <file> [--agent <claude|codex|gemini>] <target> <slug>`
 - `status.sh --config <file>`
+- `intake-history.sh --config <file> [--json] [--classification <value>] [--latest <n>]`
+- `intake-report.sh --config <file> [--json]`
 - `queue.sh --config <file> [--json] [--status <value>] [--target <value>] [--latest <n>] [--count]`
 - `history.sh --config <file> [--json] [--status <csv>] [--latest <n>]`
 - `report.sh --config <file> [--json]`
@@ -42,6 +44,8 @@
   - `workspace run <project> <fe|be|app>`
   - `workspace stop-run <project> <fe|be|app>`
   - `workspace status <project>`
+  - `workspace intake-history <project>`
+  - `workspace intake-report <project>`
   - `workspace queue <project>`
   - `workspace queue <project> --status proposed`
   - `workspace queue <project> --latest 5`
@@ -93,6 +97,10 @@
 - 자연어 요청을 한 번에 intake:
   - `workspace intake <project> --text "..."`
   - `workspace intake <project> --file /path/to/request.md --mode auto`
+- intake 분류 관측:
+  - `workspace intake-history <project>`
+  - `workspace intake-history <project> --classification ignore`
+  - `workspace intake-report <project>`
 - queue에서 proposal 필터링/실행:
   - `workspace queue <project> --status proposed`
   - `workspace queue <project> --status needs-triage`
@@ -167,6 +175,7 @@
 - 실사용 UX는 `dispatch-task -> enqueue-dispatch -> dispatch-watch` 흐름으로 구성하는 편이 자연스럽습니다.
 - triage에서 일반 자연어 구현 요청을 받으면, 내부적으로는 `workspace intake <project> --text "..."`를 기본 진입점으로 쓰는 것이 가장 단순합니다.
 - `intake`는 짧은 인사, 감사, 일반 질문 같은 non-actionable 대화는 무시하고, 실제 구현/리뷰/정리 요청만 dispatch inbox로 보냅니다.
+- `intake`는 모든 판단 결과를 `INTAKE_AUDIT_ROOT`에 남겨 나중에 오탐/누락을 조정할 수 있게 합니다.
 - high-risk 또는 ambiguous 변경은 worker/reviewer가 `request-triage`로 triage queue에 다시 올리고, triage가 `approve-ticket` 또는 `reject-ticket`으로 승인 게이트를 담당합니다.
 - task worktree 브랜치는 기본적으로 `codex/<target>/<slug>` 규칙을 사용합니다.
 - handoff는 task brief 파일을 기준으로 worker pane에 전달합니다.
