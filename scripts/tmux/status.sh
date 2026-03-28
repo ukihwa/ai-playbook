@@ -33,6 +33,32 @@ port_status() {
 	fi
 }
 
+print_dispatch_summary() {
+	python3 - "${DISPATCH_TICKET_ROOT}" <<'PY'
+import json
+import sys
+from collections import Counter
+from pathlib import Path
+
+root = Path(sys.argv[1])
+counter = Counter()
+
+if root.exists():
+    for path in root.glob("*.json"):
+        try:
+            data = json.loads(path.read_text())
+        except Exception:
+            continue
+        counter[data.get("status", "unknown")] += 1
+
+total = sum(counter.values())
+print(f" - total tickets: {total}")
+for key in ["proposed", "needs-triage", "approved", "applied-task", "applied-review", "done", "blocked", "rejected"]:
+    if counter.get(key):
+        print(f" - {key}: {counter[key]}")
+PY
+}
+
 print_header "config"
 echo "product: ${PRODUCT_NAME}"
 echo "session: ${TMUX_SESSION}"
@@ -94,3 +120,6 @@ if [[ -d "${WORKTREE_ROOT}" ]]; then
 else
 	echo " - none"
 fi
+
+print_header "dispatch"
+print_dispatch_summary
