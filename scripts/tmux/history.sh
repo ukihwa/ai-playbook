@@ -8,7 +8,7 @@ source "${SCRIPT_DIR}/common.sh"
 
 CONFIG_PATH=""
 JSON_OUTPUT="false"
-STATUS_FILTER="done,blocked,canceled"
+STATUS_FILTER="done,blocked,canceled,rejected"
 LATEST_LIMIT="10"
 
 while [[ $# -gt 0 ]]; do

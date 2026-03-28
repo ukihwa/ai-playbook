@@ -31,6 +31,9 @@ Commands:
   report <project>                Summarize dispatch ticket state
   daily-report <project>          Draft one-line daily report items from tickets
   apply-ticket <project> <id>     Execute a proposed dispatch ticket
+  approve-ticket <project> <id>   Approve a needs-triage ticket and execute it
+  reject-ticket <project> <id>    Reject a needs-triage ticket
+  request-triage <project> <id>   Mark a ticket as needs-triage
   mark-ticket <project> <id>      Update a dispatch ticket status
   dispatch-watch <project>        Watch a dispatch inbox directory and enqueue requests
   enqueue-dispatch <project>      Create a dispatch inbox request file from text or markdown
@@ -93,6 +96,9 @@ for script in \
 	"${TMUX_DIR}/report.sh" \
 	"${TMUX_DIR}/daily-report.sh" \
 	"${TMUX_DIR}/apply-ticket.sh" \
+	"${TMUX_DIR}/approve-ticket.sh" \
+	"${TMUX_DIR}/reject-ticket.sh" \
+	"${TMUX_DIR}/request-triage.sh" \
 	"${TMUX_DIR}/mark-ticket.sh" \
 	"${TMUX_DIR}/dispatch-watch.sh" \
 	"${TMUX_DIR}/start-watch.sh" \
@@ -199,6 +205,15 @@ case "${COMMAND}" in
 		;;
 	apply-ticket)
 		exec "${TMUX_DIR}/apply-ticket.sh" --config "${CONFIG_FILE}" "$@"
+		;;
+	approve-ticket)
+		exec "${TMUX_DIR}/approve-ticket.sh" --config "${CONFIG_FILE}" "$@"
+		;;
+	reject-ticket)
+		exec "${TMUX_DIR}/reject-ticket.sh" --config "${CONFIG_FILE}" "$@"
+		;;
+	request-triage)
+		exec "${TMUX_DIR}/request-triage.sh" --config "${CONFIG_FILE}" "$@"
 		;;
 	mark-ticket)
 		exec "${TMUX_DIR}/mark-ticket.sh" --config "${CONFIG_FILE}" "$@"

@@ -11,6 +11,7 @@ AGENT_NAME="codex"
 MODE="prompt"
 PANE_INDEX="0"
 TICKET_INPUT=""
+PRESERVE_APPROVED="false"
 
 while [[ $# -gt 0 ]]; do
 	case "$1" in
@@ -29,6 +30,10 @@ while [[ $# -gt 0 ]]; do
 		--pane)
 			PANE_INDEX="$2"
 			shift 2
+			;;
+		--approved)
+			PRESERVE_APPROVED="true"
+			shift
 			;;
 		*)
 			if [[ -z "${TICKET_INPUT}" ]]; then
@@ -91,7 +96,7 @@ resolve_ticket_file() {
 
 TICKET_FILE="$(resolve_ticket_file "${TICKET_INPUT}")"
 
-python3 - "${TICKET_FILE}" "${SCRIPT_DIR}" "${CONFIG_PATH}" "${AGENT_NAME}" "${MODE}" "${PANE_INDEX}" <<'PY'
+python3 - "${TICKET_FILE}" "${SCRIPT_DIR}" "${CONFIG_PATH}" "${AGENT_NAME}" "${MODE}" "${PANE_INDEX}" "${PRESERVE_APPROVED}" <<'PY'
 import json
 import shlex
 import subprocess
@@ -104,6 +109,7 @@ config_path = sys.argv[3]
 agent_name = sys.argv[4]
 mode = sys.argv[5]
 pane_index = sys.argv[6]
+preserve_approved = sys.argv[7].lower() == "true"
 
 data = json.loads(ticket_path.read_text())
 
@@ -122,7 +128,7 @@ def run(cmd):
     subprocess.run(cmd, check=True)
 
 if review_only:
-    data["status"] = "applied-review"
+    data["status"] = "approved-review" if preserve_approved else "applied-review"
     ticket_path.write_text(json.dumps(data, ensure_ascii=False))
     cmd = [
         str(script_dir / "start-review.sh"),
@@ -138,7 +144,7 @@ if review_only:
     cmd += [target, slug]
     run(cmd)
 else:
-    data["status"] = "applied-task"
+    data["status"] = "approved-task" if preserve_approved else "applied-task"
     ticket_path.write_text(json.dumps(data, ensure_ascii=False))
     cmd = [
         str(script_dir / "start-task.sh"),

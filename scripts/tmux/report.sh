@@ -85,4 +85,12 @@ if recent:
         print(f"  - [{item.get('status', 'unknown')}] {item.get('target', '?')}/{item.get('slug', '?')}")
 else:
     print("  - (empty)")
+
+triage_needed = [item for item in items if item.get("status") == "needs-triage"]
+print("triage_needed:")
+if triage_needed:
+    for item in triage_needed[:5]:
+        print(f"  - {item.get('target', '?')}/{item.get('slug', '?')}")
+else:
+    print("  - (empty)")
 PY

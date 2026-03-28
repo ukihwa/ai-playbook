@@ -99,6 +99,9 @@ triage pane UX는 아래 custom command로 감싼다.
 ```text
 /dispatch-task <natural language requirement>
 /apply-dispatch <natural language requirement or /absolute/path/to/spec.md>
+/request-triage <ticket-id> [why approval is needed]
+/approve-ticket <ticket-id>
+/reject-ticket <ticket-id> [why it is rejected]
 ```
 
 기본값은 `propose-only` 이다.
@@ -241,13 +244,42 @@ dispatcher는 proposal/apply 결과를 `DISPATCH_TICKET_ROOT` 아래 JSON 파일
 후속 명령:
 
 - `workspace queue <project> --status proposed`
+- `workspace queue <project> --status needs-triage`
 - `workspace queue <project> --latest 5`
 - `workspace queue <project> --count`
 - `workspace history <project>`
 - `workspace report <project>`
 - `workspace daily-report <project>`
 - `workspace apply-ticket <project> <ticket>`
+- `workspace request-triage <project> <ticket>`
+- `workspace approve-ticket <project> <ticket>`
+- `workspace reject-ticket <project> <ticket>`
 - `workspace mark-ticket <project> --status done <ticket>`
+
+## Governance Loop
+
+worker나 reviewer가 아래 상황을 만나면 스스로 계속 진행하지 않고 triage approval loop로 되돌린다.
+
+- target 변경 가능성
+- 범위 확대
+- architecture, auth, payment, API contract 같은 high-risk decision
+- review-only 전환 필요
+- cross-verify 또는 외부 문서 검증이 필요한 변경
+
+권장 상태 흐름:
+
+- `proposed`
+- `applied-task` / `applied-review`
+- `needs-triage`
+- `approved-task` / `approved-review`
+- `done` / `blocked` / `rejected`
+
+이 구조에서:
+
+- `request-triage`는 ticket을 `needs-triage`로 올린다
+- triage는 queue에서 이를 확인한다
+- `approve-ticket`은 승인 후 task/review 실행으로 다시 연결한다
+- `reject-ticket`은 거절 사유를 남기고 종료한다
 
 ## Dispatch Inbox Watcher
 

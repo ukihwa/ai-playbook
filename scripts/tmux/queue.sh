@@ -103,4 +103,8 @@ for item in items:
     goal = item.get("goal")
     if goal:
         print(f"  goal: {goal}")
+    notes = item.get("notes", [])
+    if notes:
+        latest = notes[-1]
+        print(f"  note: {latest.get('note', '')}")
 PY

@@ -21,6 +21,9 @@
 - `report.sh --config <file> [--json]`
 - `daily-report.sh --config <file> [--json] [--latest <n>] [--include-proposed]`
 - `apply-ticket.sh --config <file> [--agent <name>] [--mode <mode>] [--pane <index>] <ticket-file|target/slug|slug>`
+- `approve-ticket.sh --config <file> [--agent <name>] [--mode <mode>] [--pane <index>] [--note <text>] <ticket-file|target/slug|slug>`
+- `reject-ticket.sh --config <file> [--note <text>] <ticket-file|target/slug|slug>`
+- `request-triage.sh --config <file> [--note <text>] <ticket-file|target/slug|slug>`
 - `mark-ticket.sh --config <file> --status <value> [--note <text>] <ticket-file|target/slug|slug>`
 - `dispatch-watch.sh --config <file> [--apply] [--auto-apply] [--interval <seconds>] [--once]`
 - `start-watch.sh --config <file> [--apply] [--auto-apply] [--interval <seconds>]`
@@ -46,6 +49,9 @@
   - `workspace report <project>`
   - `workspace daily-report <project>`
   - `workspace apply-ticket <project> <ticket>`
+  - `workspace approve-ticket <project> <ticket>`
+  - `workspace reject-ticket <project> <ticket>`
+  - `workspace request-triage <project> <ticket>`
   - `workspace mark-ticket <project> --status done <ticket>`
   - `workspace dispatch-watch <project>`
   - `workspace enqueue-dispatch <project> --text "..."`
@@ -84,8 +90,12 @@
   - `scripts/tmux/dispatch-watch.sh --config config/<product>.env --apply`
 - queue에서 proposal 필터링/실행:
   - `workspace queue <project> --status proposed`
+  - `workspace queue <project> --status needs-triage`
   - `workspace queue <project> --latest 5`
   - `workspace apply-ticket <project> backend/api`
+  - `workspace request-triage <project> backend/api`
+  - `workspace approve-ticket <project> backend/api`
+  - `workspace reject-ticket <project> backend/api`
   - `workspace mark-ticket <project> --status done backend/api`
 - 완료/보류 흐름 요약:
   - `workspace history <project>`
@@ -150,6 +160,7 @@
 - `dispatch`는 proposal/apply 결과를 `DISPATCH_TICKET_ROOT`에 JSON으로 남겨 다음 단계 오케스트레이터가 읽을 수 있게 합니다.
 - triage pane 자체를 직접 파싱하기보다, 요청을 `DISPATCH_INBOX_ROOT`의 markdown/text 파일로 떨어뜨리고 `dispatch-watch`가 그것을 처리하는 방식이 더 안정적입니다.
 - 실사용 UX는 `dispatch-task -> enqueue-dispatch -> dispatch-watch` 흐름으로 구성하는 편이 자연스럽습니다.
+- high-risk 또는 ambiguous 변경은 worker/reviewer가 `request-triage`로 triage queue에 다시 올리고, triage가 `approve-ticket` 또는 `reject-ticket`으로 승인 게이트를 담당합니다.
 - task worktree 브랜치는 기본적으로 `codex/<target>/<slug>` 규칙을 사용합니다.
 - handoff는 task brief 파일을 기준으로 worker pane에 전달합니다.
 - 기본값은 `--mode shell`이며, 일반 셸 pane에서도 에러 없이 handoff 내용을 출력합니다.

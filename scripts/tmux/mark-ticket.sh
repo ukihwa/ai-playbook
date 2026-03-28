@@ -13,7 +13,7 @@ NOTE_VALUE=""
 
 usage() {
 	cat <<'EOF'
-usage: mark-ticket.sh --config <file> --status <done|blocked|canceled|proposed|applied-task|applied-review> [--note <text>] <ticket-file|target/slug|slug>
+usage: mark-ticket.sh --config <file> --status <done|blocked|canceled|proposed|approved|rejected|needs-triage|applied-task|applied-review|approved-task|approved-review> [--note <text>] <ticket-file|target/slug|slug>
 EOF
 }
 
@@ -50,7 +50,7 @@ done
 [[ -n "${TICKET_INPUT}" ]] || die "missing ticket identifier"
 
 case "${STATUS_VALUE}" in
-	done|blocked|canceled|proposed|applied-task|applied-review)
+	done|blocked|canceled|proposed|approved|rejected|needs-triage|applied-task|applied-review|approved-task|approved-review)
 		;;
 	*)
 		die "unsupported status '${STATUS_VALUE}'"
