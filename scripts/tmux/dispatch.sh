@@ -145,12 +145,22 @@ slugify() {
 infer_target() {
 	local text
 	text="$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]')"
-	if [[ "${text}" == *"flutter"* || "${text}" == *"android"* || "${text}" == *"ios"* || "${text}" == *"앱"* ]]; then
-		printf 'app'
+	local default_target="${DISPATCH_DEFAULT_TARGET:-pro-web}"
+	local app_target="${DISPATCH_APP_TARGET:-app}"
+	local backend_target="${DISPATCH_BACKEND_TARGET:-backend}"
+	local web_target="${DISPATCH_WEB_TARGET:-pro-web}"
+	local ai_target="${DISPATCH_AI_TARGET:-${backend_target}}"
+
+	if [[ "${text}" == *"ai-service"* || "${text}" == *"ai service"* || "${text}" == *"모델"* || "${text}" == *"예측"* || "${text}" == *"학습"* || "${text}" == *"inference"* || "${text}" == *"ml"* ]]; then
+		printf '%s' "${ai_target}"
+	elif [[ "${text}" == *"flutter"* || "${text}" == *"android"* || "${text}" == *"ios"* || "${text}" == *"모바일 앱"* || "${text}" == *"native app"* ]]; then
+		printf '%s' "${app_target}"
 	elif [[ "${text}" == *"backend"* || "${text}" == *"api"* || "${text}" == *"auth"* || "${text}" == *"db"* || "${text}" == *"database"* || "${text}" == *"redis"* || "${text}" == *"server"* || "${text}" == *"백엔드"* ]]; then
-		printf 'backend'
+		printf '%s' "${backend_target}"
+	elif [[ "${text}" == *"frontend"* || "${text}" == *"ui"* || "${text}" == *"ux"* || "${text}" == *"web"* || "${text}" == *"svelte"* || "${text}" == *"sveltekit"* || "${text}" == *"프론트"* || "${text}" == *"화면"* ]]; then
+		printf '%s' "${web_target}"
 	else
-		printf 'pro-web'
+		printf '%s' "${default_target}"
 	fi
 }
 
@@ -236,9 +246,16 @@ declare -a DONE_CRITERIA=()
 declare -a REVIEW_FOCUS=()
 declare -a DOC_UPDATES=()
 
+maybe_add_doc_update() {
+	local path="$1"
+	[[ -n "${path}" ]] || return 0
+	[[ -f "${path}" ]] || return 0
+	DOC_UPDATES+=("${path}")
+}
+
 if [[ -f "${TRIAGE_STATUS_DOC}" ]]; then
 	REFERENCES+=("${TRIAGE_STATUS_DOC}")
-	DOC_UPDATES+=("${TRIAGE_STATUS_DOC}")
+	maybe_add_doc_update "${TRIAGE_STATUS_DOC}"
 fi
 if [[ -n "${INPUT_FILE}" ]]; then
 	REFERENCES+=("${INPUT_FILE}")
@@ -282,18 +299,23 @@ if [[ "${CROSS_VERIFY}" == "true" ]]; then
 fi
 
 if [[ "${REVIEW_ONLY}" != "true" ]]; then
-	DOC_UPDATES+=("${TRIAGE_DIR}/docs/review/design-intent.md")
-	DOC_UPDATES+=("${TRIAGE_DIR}/docs/review/evaluation-criteria.md")
+	maybe_add_doc_update "${DISPATCH_DOC_UPDATE_DESIGN_INTENT:-${TRIAGE_DIR}/docs/review/design-intent.md}"
+	maybe_add_doc_update "${DISPATCH_DOC_UPDATE_EVALUATION_CRITERIA:-${TRIAGE_DIR}/docs/review/evaluation-criteria.md}"
 fi
+
 case "${TARGET_NAME}" in
-	pro-web)
-		DOC_UPDATES+=("${TRIAGE_DIR}/docs/architecture/overview.md")
+	pro-web|frontend)
+		maybe_add_doc_update "${DISPATCH_DOC_UPDATE_PRO_WEB:-${TRIAGE_DIR}/docs/architecture/overview.md}"
+		maybe_add_doc_update "${DISPATCH_DOC_UPDATE_FRONTEND:-}"
 		;;
 	backend)
-		DOC_UPDATES+=("${TRIAGE_DIR}/docs/reference/backend.md")
+		maybe_add_doc_update "${DISPATCH_DOC_UPDATE_BACKEND:-${TRIAGE_DIR}/docs/reference/backend.md}"
 		;;
 	app)
-		DOC_UPDATES+=("${TRIAGE_DIR}/docs/reference/pro-web.md")
+		maybe_add_doc_update "${DISPATCH_DOC_UPDATE_APP:-${TRIAGE_DIR}/docs/reference/pro-web.md}"
+		;;
+	ai-service)
+		maybe_add_doc_update "${DISPATCH_DOC_UPDATE_AI_SERVICE:-}"
 		;;
 esac
 
