@@ -15,7 +15,7 @@
 - `handoff.sh --config <file> [--pane <index>] [--mode shell|prompt] [--interrupt|--no-interrupt] <window> <ticket-file>`
 - `review-task.sh --config <file> [--agent <claude|codex|gemini>] [--pane <index>] <target> <slug>`
 - `start-review.sh --config <file> [--agent <claude|codex|gemini>] <target> <slug>`
-- `status.sh --config <file>`
+- `status.sh --config <file> [--json]`
 - `intake-history.sh --config <file> [--json] [--classification <value>] [--latest <n>]`
 - `intake-report.sh --config <file> [--json]`
 - `intake-tune.sh --config <file> [--json] [--latest <n>]`
@@ -45,6 +45,7 @@
   - `workspace run <project> <fe|be|app>`
   - `workspace stop-run <project> <fe|be|app>`
   - `workspace status <project>`
+  - `workspace status <project> --json`
   - `workspace intake-history <project>`
   - `workspace intake-report <project>`
   - `workspace intake-tune <project>`
