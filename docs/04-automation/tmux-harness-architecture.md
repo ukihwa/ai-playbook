@@ -94,6 +94,8 @@ last_reviewed: 2026-03-27
 - `workspace status <project>`
 - `workspace enqueue-dispatch <project> --text "..."`
 - `workspace dispatch-watch <project>`
+- `workspace watch <project>`
+- `workspace stop-watch <project>`
 - `workspace start-task <project> ...`
 - `workspace task-from-spec <project> ...`
 - `workspace start-review <project> ...`
@@ -110,6 +112,8 @@ last_reviewed: 2026-03-27
 - `scripts/tmux/start-task-from-spec.sh --config config/<product>.env --agent codex <target> <slug> /path/to/spec.md`
 - `scripts/helpers/create-dispatch-request.sh --config config/<product>.env --text "..."`
 - `scripts/tmux/dispatch-watch.sh --config config/<product>.env --apply`
+- `scripts/tmux/start-watch.sh --config config/<product>.env --apply`
+- `scripts/tmux/stop-watch.sh --config config/<product>.env`
 - `scripts/tmux/handoff.sh --config config/<product>.env <window> <ticket-file>`
 - `scripts/tmux/review-task.sh --config config/<product>.env --agent codex <target> <slug>`
 - `scripts/tmux/start-review.sh --config config/<product>.env --agent gemini --mode prompt <target> <slug>`

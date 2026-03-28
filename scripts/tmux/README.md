@@ -16,6 +16,8 @@
 - `start-review.sh --config <file> [--agent <claude|codex|gemini>] <target> <slug>`
 - `status.sh --config <file>`
 - `dispatch-watch.sh --config <file> [--apply] [--interval <seconds>] [--once]`
+- `start-watch.sh --config <file> [--apply] [--interval <seconds>]`
+- `stop-watch.sh --config <file>`
 - `cleanup-task.sh --config <file> [--delete-worktree] <target> <slug>`
 
 ## Common Flows
@@ -31,6 +33,8 @@
   - `workspace queue <project>`
   - `workspace dispatch-watch <project>`
   - `workspace enqueue-dispatch <project> --text "..."`
+  - `workspace watch <project>`
+  - `workspace stop-watch <project>`
   - `workspace start-task <project> ...`
   - `workspace task-from-spec <project> ...`
   - `workspace dispatch <project> --text "..."`
@@ -61,6 +65,8 @@
 - 파일 inbox를 감시하며 자연어/markdown 요청 처리:
   - `scripts/tmux/dispatch-watch.sh --config config/<product>.env`
   - `scripts/tmux/dispatch-watch.sh --config config/<product>.env --apply`
+  - `workspace watch <project>`
+  - `workspace watch <project> --apply`
 - triage 입력을 inbox 파일로 저장:
   - `scripts/helpers/create-dispatch-request.sh --config config/<product>.env --text "..."`
   - `workspace enqueue-dispatch <project> --text "..."`

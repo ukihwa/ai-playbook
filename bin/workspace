@@ -28,6 +28,8 @@ Commands:
   queue <project>                 Show dispatch ticket queue
   dispatch-watch <project>        Watch a dispatch inbox directory and enqueue requests
   enqueue-dispatch <project>      Create a dispatch inbox request file from text or markdown
+  watch <project>                 Start a tmux dispatch watcher window
+  stop-watch <project>            Stop the tmux dispatch watcher window
   task <project> <target> <slug>  Create a worker window and worktree
   start-task <project> ...        Create a worker, generate handoff, and send it
   task-from-spec <project> ...    Start a task from a spec or issue markdown file
@@ -72,6 +74,8 @@ for script in \
 	"${TMUX_DIR}/status.sh" \
 	"${TMUX_DIR}/queue.sh" \
 	"${TMUX_DIR}/dispatch-watch.sh" \
+	"${TMUX_DIR}/start-watch.sh" \
+	"${TMUX_DIR}/stop-watch.sh" \
 	"${ROOT_DIR}/scripts/helpers/create-dispatch-request.sh" \
 	"${TMUX_DIR}/new-task.sh" \
 	"${TMUX_DIR}/start-task.sh" \
@@ -146,6 +150,12 @@ case "${COMMAND}" in
 		;;
 	enqueue-dispatch)
 		exec "${ROOT_DIR}/scripts/helpers/create-dispatch-request.sh" --config "${CONFIG_FILE}" "$@"
+		;;
+	watch)
+		exec "${TMUX_DIR}/start-watch.sh" --config "${CONFIG_FILE}" "$@"
+		;;
+	stop-watch)
+		exec "${TMUX_DIR}/stop-watch.sh" --config "${CONFIG_FILE}" "$@"
 		;;
 	task)
 		exec "${TMUX_DIR}/new-task.sh" --config "${CONFIG_FILE}" "$@"
