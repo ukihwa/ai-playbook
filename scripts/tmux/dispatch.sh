@@ -18,6 +18,9 @@ TITLE_OVERRIDE=""
 PANE_INDEX="0"
 CONFIDENCE="0.55"
 JSON_OUTPUT="false"
+JSON_PAYLOAD=""
+STATUS_VALUE="proposed"
+TICKET_FILE=""
 
 while [[ $# -gt 0 ]]; do
 	case "$1" in
@@ -316,26 +319,20 @@ print_json_array() {
 	local array_name="$1"
 	local count
 	eval "count=\${#${array_name}[@]}"
-	python3 - "$array_name" <<'PY'
-import json
-import os
-import subprocess
-import sys
-
-array_name = sys.argv[1]
-bash = f'eval \'printf "%s\\n" "${{{array_name}[@]}}"\''
-result = subprocess.run(["bash", "-lc", bash], capture_output=True, text=True, env=os.environ)
-items = [line for line in result.stdout.splitlines() if line]
-print(json.dumps(items), end="")
-PY
+	if (( count == 0 )); then
+		printf '[]'
+		return
+	fi
+	eval "printf '%s\n' \"\${${array_name}[@]}\"" | python3 -c 'import json,sys; print(json.dumps([line.rstrip("\n") for line in sys.stdin if line.rstrip("\n")]), end="")'
 }
 
-if [[ "${JSON_OUTPUT}" == "true" ]]; then
+build_json_payload() {
 	printf '{'
 	printf '"project":%s,' "$(json_escape "${PRODUCT_NAME}")"
 	printf '"target":%s,' "$(json_escape "${TARGET_NAME}")"
 	printf '"slug":%s,' "$(json_escape "${SLUG_VALUE}")"
 	printf '"title":%s,' "$(json_escape "${TITLE_VALUE}")"
+	printf '"status":%s,' "$(json_escape "${STATUS_VALUE}")"
 	printf '"apply":%s,' "${APPLY}"
 	printf '"mode":%s,' "$(json_escape "${MODE}")"
 	printf '"agent":%s,' "$(json_escape "${AGENT_NAME}")"
@@ -349,7 +346,21 @@ if [[ "${JSON_OUTPUT}" == "true" ]]; then
 	printf '"references":'; print_json_array REFERENCES; printf ','
 	printf '"review_focus":'; print_json_array REVIEW_FOCUS; printf ','
 	printf '"doc_updates":'; print_json_array DOC_UPDATES
-	printf '}\n'
+	printf '}'
+}
+
+mkdir -p "${DISPATCH_TICKET_ROOT}"
+TICKET_FILE="${DISPATCH_TICKET_ROOT}/${TARGET_NAME}-${SLUG_VALUE}.json"
+
+write_ticket() {
+	JSON_PAYLOAD="$(build_json_payload)"
+	printf '%s\n' "${JSON_PAYLOAD}" > "${TICKET_FILE}"
+}
+
+write_ticket
+
+if [[ "${JSON_OUTPUT}" == "true" ]]; then
+	printf '%s\n' "${JSON_PAYLOAD}"
 	if [[ "${APPLY}" != "true" ]]; then
 		exit 0
 	fi
@@ -366,6 +377,7 @@ echo "agent: ${AGENT_NAME}"
 echo "review_only: ${REVIEW_ONLY}"
 echo "cross_verify_candidate: ${CROSS_VERIFY}"
 echo "confidence: ${CONFIDENCE}"
+echo "ticket: ${TICKET_FILE}"
 echo "goal: ${GOAL_TEXT}"
 print_list "in_scope" IN_SCOPE
 print_list "out_of_scope" OUT_OF_SCOPE
@@ -379,6 +391,8 @@ if [[ "${APPLY}" != "true" ]]; then
 fi
 
 if [[ "${REVIEW_ONLY}" == "true" ]]; then
+	STATUS_VALUE="applied-review"
+	write_ticket
 	review_args=(--config "${CONFIG_PATH}" --pane "${PANE_INDEX}" --mode "${MODE}" --agent "${AGENT_NAME}")
 	local_item=""
 	for local_item in "${REFERENCES[@]}"; do
@@ -391,6 +405,8 @@ if [[ "${REVIEW_ONLY}" == "true" ]]; then
 	exec "${SCRIPT_DIR}/start-review.sh" "${review_args[@]}"
 fi
 
+STATUS_VALUE="applied-task"
+write_ticket
 task_args=(--config "${CONFIG_PATH}" --pane "${PANE_INDEX}" --mode "${MODE}" --agent "${AGENT_NAME}" --title "${TITLE_VALUE}" --goal "${GOAL_TEXT}")
 local_item=""
 if (( ${#IN_SCOPE[@]} )); then

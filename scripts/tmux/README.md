@@ -87,6 +87,7 @@
 - `RUN_FE_PRE_WAIT_PORTS`, `RUN_BE_PRE_WAIT_PORTS`, `RUN_APP_PRE_WAIT_PORTS`
 - `RUN_FE_WAIT_PORTS`, `RUN_BE_WAIT_PORTS`, `RUN_APP_WAIT_PORTS`
 - `RUN_FE_WAIT_TIMEOUT`, `RUN_BE_WAIT_TIMEOUT`, `RUN_APP_WAIT_TIMEOUT`
+- `DISPATCH_TICKET_ROOT`
 - `CLAUDE_FE_DIR`, `CLAUDE_BE_DIR`, `CLAUDE_APP_DIR`
 
 ## Design Rules
@@ -99,6 +100,7 @@
 - 필요하면 runtime 시작 전에 `RUN_*_PRE_CMD`로 인프라를 먼저 보장할 수 있습니다.
 - 백엔드처럼 Docker 인프라가 필요한 경우 `RUN_BE_PRE_CMD`에서 Docker Desktop, db, redis를 먼저 준비한 뒤 앱을 실행합니다.
 - 전역 `up`, `dev`처럼 너무 짧은 이름은 셸/도구 충돌 가능성이 커서, 공통 런처는 `workspace` 또는 `ws`를 기본으로 사용합니다.
+- `dispatch`는 proposal/apply 결과를 `DISPATCH_TICKET_ROOT`에 JSON으로 남겨 다음 단계 오케스트레이터가 읽을 수 있게 합니다.
 - task worktree 브랜치는 기본적으로 `codex/<target>/<slug>` 규칙을 사용합니다.
 - handoff는 task brief 파일을 기준으로 worker pane에 전달합니다.
 - 기본값은 `--mode shell`이며, 일반 셸 pane에서도 에러 없이 handoff 내용을 출력합니다.
