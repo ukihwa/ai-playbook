@@ -25,6 +25,7 @@ Commands:
   run <project> <fe|be|app>       Start a configured runtime window
   stop-run <project> <fe|be|app>  Stop a configured runtime window
   status <project>                Show tmux and worktree status
+  queue <project>                 Show dispatch ticket queue
   task <project> <target> <slug>  Create a worker window and worktree
   start-task <project> ...        Create a worker, generate handoff, and send it
   task-from-spec <project> ...    Start a task from a spec or issue markdown file
@@ -67,6 +68,7 @@ for script in \
 	"${TMUX_DIR}/start-runtime.sh" \
 	"${TMUX_DIR}/stop-runtime.sh" \
 	"${TMUX_DIR}/status.sh" \
+	"${TMUX_DIR}/queue.sh" \
 	"${TMUX_DIR}/new-task.sh" \
 	"${TMUX_DIR}/start-task.sh" \
 	"${TMUX_DIR}/start-task-from-spec.sh" \
@@ -131,6 +133,9 @@ case "${COMMAND}" in
 		;;
 	status)
 		exec "${TMUX_DIR}/status.sh" --config "${CONFIG_FILE}" "$@"
+		;;
+	queue)
+		exec "${TMUX_DIR}/queue.sh" --config "${CONFIG_FILE}" "$@"
 		;;
 	task)
 		exec "${TMUX_DIR}/new-task.sh" --config "${CONFIG_FILE}" "$@"

@@ -27,9 +27,11 @@
   - `workspace run <project> <fe|be|app>`
   - `workspace stop-run <project> <fe|be|app>`
   - `workspace status <project>`
+  - `workspace queue <project>`
   - `workspace start-task <project> ...`
   - `workspace task-from-spec <project> ...`
   - `workspace dispatch <project> --text "..."`
+  - `workspace queue <project> --json`
   - `workspace start-review <project> ...`
   - `ws up <project>`
   - triage pane custom commands:
