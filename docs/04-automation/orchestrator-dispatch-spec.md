@@ -115,6 +115,8 @@ triage pane UX는 아래 custom command로 감싼다.
 
 `dispatch-watch`는 triage 입력이 파일 inbox로 떨어졌을 때 이를 자동으로 처리하는 watcher 레이어다.
 
+`dispatch-watch --auto-apply`는 low-risk/high-confidence 요청은 바로 실행하고, policy에 걸려 자동 실행이 막힌 요청은 `needs-triage`로 올려 triage queue에서 승인받게 하는 것이 기본값이다.
+
 ## Output Schema
 
 dispatcher는 내부적으로 아래 구조를 만든다.

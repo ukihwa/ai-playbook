@@ -63,6 +63,7 @@ AUTO_APPLY_MIN_CONFIDENCE="${DISPATCH_AUTO_APPLY_MIN_CONFIDENCE:-0.75}"
 AUTO_APPLY_ALLOWED_TARGETS="${DISPATCH_AUTO_APPLY_ALLOWED_TARGETS:-pro-web,frontend,app}"
 AUTO_APPLY_BLOCK_REVIEW_ONLY="${DISPATCH_AUTO_APPLY_BLOCK_REVIEW_ONLY:-true}"
 AUTO_APPLY_BLOCK_CROSS_VERIFY="${DISPATCH_AUTO_APPLY_BLOCK_CROSS_VERIFY:-true}"
+AUTO_APPLY_ESCALATE_ON_SKIP="${DISPATCH_AUTO_APPLY_ESCALATE_ON_SKIP:-true}"
 
 mkdir -p "${DISPATCH_INBOX_ROOT}"
 PROCESSED_DIR="${DISPATCH_INBOX_ROOT}/processed"
@@ -135,7 +136,7 @@ elif block_cross_verify and cross_verify:
 if eligible:
     print(f"apply {target}/{data.get('slug','')}")
 else:
-    print(f"skip {reason}")
+    print(f"skip {target}/{data.get('slug','')} {reason}")
 PY
 )"
 			if [[ "${auto_apply_decision}" == apply\ * ]]; then
@@ -144,7 +145,17 @@ PY
 				printf 'auto-applying: %s\n' "${ticket_ref}"
 				"${SCRIPT_DIR}/apply-ticket.sh" --config "${CONFIG_PATH}" "${ticket_ref}" >>"${log_file}" 2>&1
 			else
-				printf 'auto-apply skipped: %s\n' "${auto_apply_decision#skip }"
+				local skip_payload=""
+				local ticket_ref=""
+				local skip_reason=""
+				skip_payload="${auto_apply_decision#skip }"
+				ticket_ref="${skip_payload%% *}"
+				skip_reason="${skip_payload#* }"
+				printf 'auto-apply skipped: %s\n' "${skip_reason}"
+				if [[ "${AUTO_APPLY_ESCALATE_ON_SKIP}" == "true" && -n "${ticket_ref}" && -n "${skip_reason}" ]]; then
+					printf 'escalating to triage: %s\n' "${ticket_ref}"
+					"${SCRIPT_DIR}/request-triage.sh" --config "${CONFIG_PATH}" --note "auto-apply skipped: ${skip_reason}" "${ticket_ref}" >>"${log_file}" 2>&1
+				fi
 			fi
 		fi
 		mv "${lock_file}" "${processed_file}"

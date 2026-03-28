@@ -19,10 +19,10 @@ ws dispatch-watch soullink --auto-apply --once
 3. Summarize briefly:
 - target
 - slug
-- whether it was auto-applied or left as a proposal
+- whether it was auto-applied or escalated to `needs-triage`
 - doc_updates
 
 ## Notes
 
-- Low-confidence or high-risk requests should remain in the queue as `proposed`.
+- Low-confidence or high-risk requests should be escalated to `needs-triage` unless project policy says otherwise.
 - Requests that imply review-only or cross-verify should not be auto-applied unless project policy explicitly allows it.
