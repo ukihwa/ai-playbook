@@ -125,6 +125,90 @@ if recent:
 PY
 }
 
+write_dispatch_summary_json() {
+	python3 - "${DISPATCH_TICKET_ROOT}" <<'PY'
+import json
+import sys
+from collections import Counter
+from pathlib import Path
+
+root = Path(sys.argv[1])
+counter = Counter()
+daily_report_allowed = {"applied-task", "applied-review", "done", "blocked"}
+latest = None
+
+if root.exists():
+    for path in sorted(root.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True):
+        try:
+            data = json.loads(path.read_text())
+        except Exception:
+            continue
+        if latest is None:
+            latest = {
+                "ticket_file": str(path),
+                "status": data.get("status", "unknown"),
+                "target": data.get("target", "?"),
+                "slug": data.get("slug", "?"),
+                "goal": data.get("goal", ""),
+            }
+        counter[data.get("status", "unknown")] += 1
+
+payload = {
+    "total_tickets": sum(counter.values()),
+    "counts": dict(counter),
+    "daily_report_candidates": sum(counter.get(key, 0) for key in daily_report_allowed),
+    "latest_ticket": latest,
+}
+
+print(json.dumps(payload, ensure_ascii=False))
+PY
+}
+
+write_intake_summary_json() {
+	python3 - "${INTAKE_AUDIT_ROOT}" <<'PY'
+import json
+import sys
+from collections import Counter
+from pathlib import Path
+
+root = Path(sys.argv[1])
+items = []
+
+if root.exists():
+    for path in sorted(root.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True):
+        try:
+            data = json.loads(path.read_text())
+        except Exception:
+            continue
+        items.append(data)
+
+counter = Counter(item.get("classification", "unknown") for item in items)
+recent = items[:10]
+recent_counter = Counter(item.get("classification", "unknown") for item in recent)
+latest = None
+if recent:
+    latest_item = recent[0]
+    latest = {
+        "classification": latest_item.get("classification", "unknown"),
+        "reason": latest_item.get("reason", ""),
+        "request": latest_item.get("request", ""),
+    }
+
+payload = {
+    "total_inputs": sum(counter.values()),
+    "counts": dict(counter),
+    "recent_10": {
+        "actionable": recent_counter.get("actionable", 0),
+        "ignore": recent_counter.get("ignore", 0),
+        "unknown": recent_counter.get("unknown", 0),
+    },
+    "latest_intake": latest,
+}
+
+print(json.dumps(payload, ensure_ascii=False))
+PY
+}
+
 if [[ "${JSON_OUTPUT}" == "true" ]]; then
 	TMP_DIR="$(mktemp -d)"
 	trap 'rm -rf "${TMP_DIR}"' EXIT
@@ -133,8 +217,8 @@ if [[ "${JSON_OUTPUT}" == "true" ]]; then
 	TMUX_FILE="${TMP_DIR}/tmux.json"
 	RUNTIME_FILE="${TMP_DIR}/runtime.json"
 	WORKTREES_FILE="${TMP_DIR}/worktrees.json"
-	DISPATCH_FILE="${TMP_DIR}/dispatch.txt"
-	INTAKE_FILE="${TMP_DIR}/intake.txt"
+	DISPATCH_FILE="${TMP_DIR}/dispatch.json"
+	INTAKE_FILE="${TMP_DIR}/intake.json"
 
 	python3 - <<'PY' > "${TARGETS_FILE}"
 import json, os
@@ -202,8 +286,8 @@ PY
 		printf '[]\n' > "${WORKTREES_FILE}"
 	fi
 
-	print_dispatch_summary > "${DISPATCH_FILE}"
-	print_intake_summary > "${INTAKE_FILE}"
+	write_dispatch_summary_json > "${DISPATCH_FILE}"
+	write_intake_summary_json > "${INTAKE_FILE}"
 
 	python3 - "${TARGETS_FILE}" "${TMUX_FILE}" "${RUNTIME_FILE}" "${WORKTREES_FILE}" "${DISPATCH_FILE}" "${INTAKE_FILE}" <<'PY'
 import json
@@ -215,8 +299,8 @@ targets = json.loads(Path(sys.argv[1]).read_text())
 tmux_windows = [json.loads(line) for line in Path(sys.argv[2]).read_text().splitlines() if line.strip()]
 runtime_info = json.loads(Path(sys.argv[3]).read_text())
 worktrees = json.loads(Path(sys.argv[4]).read_text())
-dispatch_lines = [line.rstrip() for line in Path(sys.argv[5]).read_text().splitlines() if line.strip()]
-intake_lines = [line.rstrip() for line in Path(sys.argv[6]).read_text().splitlines() if line.strip()]
+dispatch_summary = json.loads(Path(sys.argv[5]).read_text())
+intake_summary = json.loads(Path(sys.argv[6]).read_text())
 
 payload = {
     "config": {
@@ -229,8 +313,8 @@ payload = {
     "tmux": tmux_windows,
     "runtime": runtime_info,
     "worktrees": worktrees,
-    "dispatch_summary": dispatch_lines,
-    "intake_summary": intake_lines,
+    "dispatch_summary": dispatch_summary,
+    "intake_summary": intake_summary,
 }
 
 print(json.dumps(payload, ensure_ascii=False))
