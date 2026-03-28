@@ -43,8 +43,19 @@ WINDOW_NAME="${DISPATCH_WATCH_WINDOW:-dispatch-watch}"
 WINDOW_DIR="${TRIAGE_DIR}"
 
 ensure_window "${WINDOW_NAME}" "${WINDOW_DIR}"
-tmux send-keys -t "$(pane_path "${WINDOW_NAME}").0" C-c
-tmux send-keys -t "$(pane_path "${WINDOW_NAME}").0" "cd ${WINDOW_DIR}" C-m
+elapsed=0
+while ! tmux_window_exists "${WINDOW_NAME}"; do
+	sleep 1
+	((elapsed += 1))
+	if (( elapsed >= 5 )); then
+		die "failed to create watcher window '${WINDOW_NAME}'"
+	fi
+done
+
+WATCH_PANE_TARGET="$(tmux list-panes -t "$(pane_path "${WINDOW_NAME}")" -F '#{pane_id}' | head -n 1)"
+[[ -n "${WATCH_PANE_TARGET}" ]] || die "failed to resolve watcher pane for '${WINDOW_NAME}'"
+tmux send-keys -t "${WATCH_PANE_TARGET}" C-c
+tmux send-keys -t "${WATCH_PANE_TARGET}" "cd ${WINDOW_DIR}" C-m
 
 WATCH_CMD="${SCRIPT_DIR}/dispatch-watch.sh --config ${CONFIG_PATH} --interval ${INTERVAL_SECONDS}"
 if [[ "${APPLY}" == "true" ]]; then
@@ -53,7 +64,7 @@ fi
 if [[ "${AUTO_APPLY}" == "true" ]]; then
 	WATCH_CMD+=" --auto-apply"
 fi
-tmux send-keys -t "$(pane_path "${WINDOW_NAME}").0" "${WATCH_CMD}" C-m
+tmux send-keys -t "${WATCH_PANE_TARGET}" "${WATCH_CMD}" C-m
 
 print_header "dispatch watcher started"
 echo "session: ${TMUX_SESSION}"
