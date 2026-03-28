@@ -1,10 +1,10 @@
 # Apply Dispatch
 
-Use this command when the request should be executed immediately instead of going through the inbox watcher flow.
+Use this command when the request should be executed immediately through the inbox watcher flow.
 
 ## Goal
 
-Turn a natural-language requirement or spec path into a real task or review window by calling the dispatcher with `--apply`.
+Turn a natural-language requirement or spec path into a real task or review window by enqueueing it and running the watcher with `--apply`.
 
 ## Steps
 
@@ -15,13 +15,15 @@ Turn a natural-language requirement or spec path into a real task or review wind
 2. If `$ARGUMENTS` starts with `/`, treat it as a file path and run:
 
 ```bash
-ws dispatch soullink "$ARGUMENTS" --apply
+ws enqueue-dispatch soullink "$ARGUMENTS"
+ws dispatch-watch soullink --apply --once
 ```
 
 3. Otherwise run:
 
 ```bash
-ws dispatch soullink --text "$ARGUMENTS" --apply
+ws enqueue-dispatch soullink --text "$ARGUMENTS"
+ws dispatch-watch soullink --apply --once
 ```
 
 4. Summarize the actual execution result:
@@ -29,13 +31,6 @@ ws dispatch soullink --text "$ARGUMENTS" --apply
 - slug
 - task vs review
 - handoff or review artifact path
-
-5. If the user prefers the safer inbox flow, recommend:
-
-```bash
-ws enqueue-dispatch soullink --text "$ARGUMENTS"
-ws dispatch-watch soullink --once
-```
 
 ## Safety
 

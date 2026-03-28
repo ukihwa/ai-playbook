@@ -4,22 +4,31 @@ Use this command from the triage pane when the user gives a new requirement in n
 
 ## Goal
 
-Interpret the user's request, store it in the dispatch inbox, and guide the operator to review the proposal produced by the watcher/dispatcher before execution.
+Interpret the user's request, store it in the dispatch inbox, and immediately run a one-shot watcher so the operator gets a structured proposal without manually chaining commands.
 
 ## Steps
 
 1. Treat `$ARGUMENTS` as the raw requirement text.
-2. Run:
+2. Create the inbox request:
 
 ```bash
 ws enqueue-dispatch soullink --text "$ARGUMENTS"
 ```
 
-3. Tell the operator:
-- the inbox file path that was created
-- to run `ws dispatch-watch soullink --once` for a one-shot proposal, or keep `ws dispatch-watch soullink` running in a watcher pane
+3. Then immediately run:
 
-4. Do not apply automatically.
+```bash
+ws dispatch-watch soullink --once
+```
+
+4. Summarize the proposal briefly:
+- target
+- slug
+- review_only
+- cross_verify_candidate
+- doc_updates
+
+5. Do not apply automatically.
 
 ## Notes
 
@@ -28,6 +37,7 @@ ws enqueue-dispatch soullink --text "$ARGUMENTS"
 
 ```bash
 ws enqueue-dispatch soullink /absolute/path/to/request.md
+ws dispatch-watch soullink --once
 ```
 
 - If the proposal looks wrong after watcher processing, refine the wording or use `ws dispatch ... --target ... --slug ...` explicitly.
