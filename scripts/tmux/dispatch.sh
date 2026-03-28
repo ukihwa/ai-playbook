@@ -181,7 +181,10 @@ infer_cross_verify() {
 
 infer_confidence() {
 	local text="$1"
-	local score="0.55"
+	local target="$2"
+	local lowered
+	lowered="$(printf '%s' "${text}" | tr '[:upper:]' '[:lower:]')"
+	local score="0.62"
 	if [[ -n "${INPUT_FILE}" ]]; then
 		score="0.75"
 	fi
@@ -190,6 +193,12 @@ infer_confidence() {
 	fi
 	if [[ -n "${SLUG_OVERRIDE}" ]]; then
 		score="0.90"
+	fi
+	if [[ "${target}" == "pro-web" || "${target}" == "frontend" || "${target}" == "app" ]]; then
+		score="0.78"
+	fi
+	if [[ "${lowered}" == *"문구"* || "${lowered}" == *"텍스트"* || "${lowered}" == *"ui"* || "${lowered}" == *"ux"* || "${lowered}" == *"화면"* || "${lowered}" == *"버튼"* || "${lowered}" == *"layout"* || "${lowered}" == *"mobile"* || "${lowered}" == *"responsive"* ]]; then
+		score="0.82"
 	fi
 	if infer_review_only "${text}" || infer_cross_verify "${text}"; then
 		score="0.80"
@@ -239,7 +248,7 @@ CROSS_VERIFY="false"
 if infer_cross_verify "${INPUT_SUMMARY}"; then
 	CROSS_VERIFY="true"
 fi
-CONFIDENCE="$(infer_confidence "${INPUT_SUMMARY}")"
+CONFIDENCE="$(infer_confidence "${INPUT_SUMMARY}" "${TARGET_NAME}")"
 
 TRIAGE_STATUS_DOC="${TRIAGE_DIR}/docs/tasks/triage-status.md"
 declare -a REFERENCES=()

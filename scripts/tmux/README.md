@@ -26,6 +26,7 @@
 - `request-triage.sh --config <file> [--note <text>] <ticket-file|target/slug|slug>`
 - `mark-ticket.sh --config <file> --status <value> [--note <text>] <ticket-file|target/slug|slug>`
 - `dispatch-watch.sh --config <file> [--apply] [--auto-apply] [--interval <seconds>] [--once]`
+- `intake.sh --config <file> [--text <request> | --file <path>] [--mode auto|apply|propose] [--interval <seconds>]`
 - `start-watch.sh --config <file> [--apply] [--auto-apply] [--interval <seconds>]`
 - `stop-watch.sh --config <file>`
 - `cleanup-task.sh --config <file> [--delete-worktree] <target> <slug>`
@@ -55,6 +56,7 @@
   - `workspace mark-ticket <project> --status done <ticket>`
   - `workspace dispatch-watch <project>`
   - `workspace enqueue-dispatch <project> --text "..."`
+  - `workspace intake <project> --text "..."`
   - `workspace watch <project>`
   - `workspace stop-watch <project>`
   - `workspace start-task <project> ...`
@@ -88,6 +90,9 @@
 - 파일 inbox를 감시하며 자연어/markdown 요청 처리:
   - `scripts/tmux/dispatch-watch.sh --config config/<product>.env`
   - `scripts/tmux/dispatch-watch.sh --config config/<product>.env --apply`
+- 자연어 요청을 한 번에 intake:
+  - `workspace intake <project> --text "..."`
+  - `workspace intake <project> --file /path/to/request.md --mode auto`
 - queue에서 proposal 필터링/실행:
   - `workspace queue <project> --status proposed`
   - `workspace queue <project> --status needs-triage`
@@ -160,6 +165,7 @@
 - `dispatch`는 proposal/apply 결과를 `DISPATCH_TICKET_ROOT`에 JSON으로 남겨 다음 단계 오케스트레이터가 읽을 수 있게 합니다.
 - triage pane 자체를 직접 파싱하기보다, 요청을 `DISPATCH_INBOX_ROOT`의 markdown/text 파일로 떨어뜨리고 `dispatch-watch`가 그것을 처리하는 방식이 더 안정적입니다.
 - 실사용 UX는 `dispatch-task -> enqueue-dispatch -> dispatch-watch` 흐름으로 구성하는 편이 자연스럽습니다.
+- triage에서 일반 자연어 구현 요청을 받으면, 내부적으로는 `workspace intake <project> --text "..."`를 기본 진입점으로 쓰는 것이 가장 단순합니다.
 - high-risk 또는 ambiguous 변경은 worker/reviewer가 `request-triage`로 triage queue에 다시 올리고, triage가 `approve-ticket` 또는 `reject-ticket`으로 승인 게이트를 담당합니다.
 - task worktree 브랜치는 기본적으로 `codex/<target>/<slug>` 규칙을 사용합니다.
 - handoff는 task brief 파일을 기준으로 worker pane에 전달합니다.

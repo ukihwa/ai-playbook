@@ -85,6 +85,8 @@ dispatcher는 아래 입력 형태를 지원해야 한다.
 권장 명령 인터페이스:
 
 ```bash
+ws intake <project> --text "..."
+ws intake <project> --file /path/to/request.md --mode auto
 ws dispatch <project> --text "..."
 ws dispatch <project> /path/to/request.md
 ws dispatch <project> --json --text "..."
@@ -105,6 +107,8 @@ triage pane UX는 아래 custom command로 감싼다.
 ```
 
 기본값은 `propose-only` 이다.
+
+실사용 triage UX에서는 일반 자연어 요청을 받았을 때 `workspace intake`를 먼저 쓰고, 그 안에서 inbox 생성과 watcher 1회 실행을 묶는 편이 가장 단순하다.
 
 - `--apply` 없음:
   - 구조화 결과를 보여주고 종료
