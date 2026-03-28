@@ -29,6 +29,7 @@
   - `workspace status <project>`
   - `workspace start-task <project> ...`
   - `workspace task-from-spec <project> ...`
+  - `workspace dispatch <project> --text "..."`
   - `workspace start-review <project> ...`
   - `ws up <project>`
 - 기본 세션 + 기본 Claude 창 부팅:
@@ -45,6 +46,9 @@
   - `scripts/tmux/start-task.sh --config config/<product>.env --agent codex --mode prompt --goal "..." --done "..." <target> <slug>`
 - spec 또는 GitHub issue 본문에서 바로 task 시작:
   - `scripts/tmux/start-task-from-spec.sh --config config/<product>.env --agent codex <target> <slug> /path/to/spec.md`
+- 자연어 또는 markdown에서 task 제안/실행:
+  - `scripts/tmux/dispatch.sh --config config/<product>.env --text "..." `
+  - `scripts/tmux/dispatch.sh --config config/<product>.env /path/to/request.md --apply`
 - 리뷰 window + Gemini 부팅:
   - `scripts/tmux/review-task.sh --config config/<product>.env --agent gemini <target> <slug>`
 - 리뷰 window + artifact 생성 + Gemini 부팅:

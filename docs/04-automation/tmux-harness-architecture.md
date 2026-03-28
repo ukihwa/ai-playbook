@@ -19,6 +19,7 @@ tags:
 related:
   - ../01-principles/ai-collaboration-playbook.md
   - ../06-checklists/new-project-checklist.md
+  - ./orchestrator-dispatch-spec.md
 last_reviewed: 2026-03-27
 ---
 

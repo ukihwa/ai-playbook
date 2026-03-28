@@ -18,5 +18,6 @@
 6. `03-workflows/code-review-harness-workflow.md`
 7. `04-automation/skill-evaluation-policy.md`
 8. `04-automation/tmux-harness-architecture.md`
-9. `04-automation/omc-usage-guide.md`
-10. `06-checklists/new-project-checklist.md`
+9. `04-automation/orchestrator-dispatch-spec.md`
+10. `04-automation/omc-usage-guide.md`
+11. `06-checklists/new-project-checklist.md`
