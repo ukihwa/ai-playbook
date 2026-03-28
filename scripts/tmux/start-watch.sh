@@ -8,6 +8,7 @@ source "${SCRIPT_DIR}/common.sh"
 
 CONFIG_PATH=""
 APPLY="false"
+AUTO_APPLY="false"
 INTERVAL_SECONDS="3"
 
 while [[ $# -gt 0 ]]; do
@@ -20,12 +21,16 @@ while [[ $# -gt 0 ]]; do
 			APPLY="true"
 			shift
 			;;
+		--auto-apply)
+			AUTO_APPLY="true"
+			shift
+			;;
 		--interval)
 			INTERVAL_SECONDS="$2"
 			shift 2
 			;;
 		*)
-			die "usage: start-watch.sh --config <file> [--apply] [--interval <seconds>]"
+			die "usage: start-watch.sh --config <file> [--apply] [--auto-apply] [--interval <seconds>]"
 			;;
 	esac
 done
@@ -45,6 +50,9 @@ WATCH_CMD="${SCRIPT_DIR}/dispatch-watch.sh --config ${CONFIG_PATH} --interval ${
 if [[ "${APPLY}" == "true" ]]; then
 	WATCH_CMD+=" --apply"
 fi
+if [[ "${AUTO_APPLY}" == "true" ]]; then
+	WATCH_CMD+=" --auto-apply"
+fi
 tmux send-keys -t "$(pane_path "${WINDOW_NAME}").0" "${WATCH_CMD}" C-m
 
 print_header "dispatch watcher started"
@@ -52,5 +60,6 @@ echo "session: ${TMUX_SESSION}"
 echo "window: ${WINDOW_NAME}"
 echo "dir: ${WINDOW_DIR}"
 echo "apply: ${APPLY}"
+echo "auto_apply: ${AUTO_APPLY}"
 echo "interval_seconds: ${INTERVAL_SECONDS}"
 echo "command: ${WATCH_CMD}"

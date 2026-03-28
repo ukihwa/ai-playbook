@@ -8,12 +8,13 @@ source "${SCRIPT_DIR}/common.sh"
 
 CONFIG_PATH=""
 APPLY="false"
+AUTO_APPLY=""
 INTERVAL_SECONDS="3"
 ONCE="false"
 
 usage() {
 	cat <<'EOF'
-usage: dispatch-watch.sh --config <file> [--apply] [--interval <seconds>] [--once]
+usage: dispatch-watch.sh --config <file> [--apply] [--auto-apply] [--interval <seconds>] [--once]
 
 Watches the configured dispatch inbox directory and runs dispatch for any
 new .md or .txt request files.
@@ -28,6 +29,10 @@ while [[ $# -gt 0 ]]; do
 			;;
 		--apply)
 			APPLY="true"
+			shift
+			;;
+		--auto-apply)
+			AUTO_APPLY="true"
 			shift
 			;;
 		--interval)
@@ -50,6 +55,15 @@ done
 
 load_config "${CONFIG_PATH}"
 
+if [[ -z "${AUTO_APPLY}" ]]; then
+	AUTO_APPLY="${DISPATCH_AUTO_APPLY:-false}"
+fi
+
+AUTO_APPLY_MIN_CONFIDENCE="${DISPATCH_AUTO_APPLY_MIN_CONFIDENCE:-0.75}"
+AUTO_APPLY_ALLOWED_TARGETS="${DISPATCH_AUTO_APPLY_ALLOWED_TARGETS:-pro-web,frontend,app}"
+AUTO_APPLY_BLOCK_REVIEW_ONLY="${DISPATCH_AUTO_APPLY_BLOCK_REVIEW_ONLY:-true}"
+AUTO_APPLY_BLOCK_CROSS_VERIFY="${DISPATCH_AUTO_APPLY_BLOCK_CROSS_VERIFY:-true}"
+
 mkdir -p "${DISPATCH_INBOX_ROOT}"
 PROCESSED_DIR="${DISPATCH_INBOX_ROOT}/processed"
 FAILED_DIR="${DISPATCH_INBOX_ROOT}/failed"
@@ -68,10 +82,6 @@ process_file() {
 	output_file="$(mktemp)"
 	log_file="$(mktemp)"
 
-	if [[ "${APPLY}" == "true" ]]; then
-		dispatch_cmd+=(--apply)
-	fi
-
 	if [[ -e "${lock_file}" || -e "${processed_file}" ]]; then
 		return 0
 	fi
@@ -80,6 +90,63 @@ process_file() {
 	printf 'processing: %s\n' "${base_name}"
 
 	if "${dispatch_cmd[@]}" "${lock_file}" >"${output_file}" 2>"${log_file}"; then
+		if [[ "${APPLY}" == "true" ]]; then
+			local ticket_ref=""
+			ticket_ref="$(python3 - "${output_file}" <<'PY'
+import json, sys
+data = json.loads(open(sys.argv[1]).read())
+print(f"{data['target']}/{data['slug']}")
+PY
+)"
+			printf 'applying: %s\n' "${ticket_ref}"
+			"${SCRIPT_DIR}/apply-ticket.sh" --config "${CONFIG_PATH}" "${ticket_ref}" >>"${log_file}" 2>&1
+		elif [[ "${AUTO_APPLY}" == "true" ]]; then
+			local auto_apply_decision=""
+			auto_apply_decision="$(python3 - "${output_file}" "${AUTO_APPLY_MIN_CONFIDENCE}" "${AUTO_APPLY_ALLOWED_TARGETS}" "${AUTO_APPLY_BLOCK_REVIEW_ONLY}" "${AUTO_APPLY_BLOCK_CROSS_VERIFY}" <<'PY'
+import json
+import sys
+
+data = json.loads(open(sys.argv[1]).read())
+min_conf = float(sys.argv[2])
+allowed_targets = {item.strip() for item in sys.argv[3].split(",") if item.strip()}
+block_review_only = sys.argv[4].lower() == "true"
+block_cross_verify = sys.argv[5].lower() == "true"
+
+target = data.get("target", "")
+confidence = float(data.get("confidence", 0))
+review_only = bool(data.get("review_only"))
+cross_verify = bool(data.get("cross_verify_candidate"))
+
+eligible = True
+reason = "eligible"
+if allowed_targets and target not in allowed_targets:
+    eligible = False
+    reason = f"target-not-allowed:{target}"
+elif confidence < min_conf:
+    eligible = False
+    reason = f"low-confidence:{confidence:.2f}"
+elif block_review_only and review_only:
+    eligible = False
+    reason = "review-only"
+elif block_cross_verify and cross_verify:
+    eligible = False
+    reason = "cross-verify"
+
+if eligible:
+    print(f"apply {target}/{data.get('slug','')}")
+else:
+    print(f"skip {reason}")
+PY
+)"
+			if [[ "${auto_apply_decision}" == apply\ * ]]; then
+				local ticket_ref=""
+				ticket_ref="${auto_apply_decision#apply }"
+				printf 'auto-applying: %s\n' "${ticket_ref}"
+				"${SCRIPT_DIR}/apply-ticket.sh" --config "${CONFIG_PATH}" "${ticket_ref}" >>"${log_file}" 2>&1
+			else
+				printf 'auto-apply skipped: %s\n' "${auto_apply_decision#skip }"
+			fi
+		fi
 		mv "${lock_file}" "${processed_file}"
 		printf 'processed: %s\n' "${base_name}"
 	else
@@ -108,6 +175,7 @@ watch_once() {
 print_header "dispatch watch"
 echo "inbox: ${DISPATCH_INBOX_ROOT}"
 echo "apply: ${APPLY}"
+echo "auto_apply: ${AUTO_APPLY}"
 echo "interval_seconds: ${INTERVAL_SECONDS}"
 
 if [[ "${ONCE}" == "true" ]]; then

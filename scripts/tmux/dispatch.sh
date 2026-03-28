@@ -210,6 +210,9 @@ if [[ -n "${INPUT_FILE}" ]]; then
 	if [[ -z "${GOAL_TEXT}" ]]; then
 		GOAL_TEXT="$(first_nonempty_line "$(extract_section "${INPUT_FILE}" "Problem")")"
 	fi
+	if [[ -z "${GOAL_TEXT}" ]]; then
+		GOAL_TEXT="$(first_nonempty_line "$(sed -n '1,80p' "${INPUT_FILE}")")"
+	fi
 	IN_SCOPE_SECTION="$(extract_section "${INPUT_FILE}" "In Scope")"
 	OUT_OF_SCOPE_SECTION="$(extract_section "${INPUT_FILE}" "Out Of Scope")"
 	SUCCESS_SECTION="$(extract_section "${INPUT_FILE}" "Success Criteria")"

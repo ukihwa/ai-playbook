@@ -267,7 +267,7 @@ copy_if_missing "${TEMPLATE_DIR}/docs/README.md" "${ROOT_PATH}/docs/README.md"
 copy_if_missing "${TEMPLATE_DIR}/docs/tasks/triage-status.md" "${ROOT_PATH}/docs/tasks/triage-status.md"
 
 mkdir -p "${CLAUDE_DIR}/.claude/commands"
-for command in dispatch-task apply-dispatch watch-dispatch dispatch-queue apply-ticket; do
+for command in dispatch-task dispatch-now apply-dispatch watch-dispatch dispatch-queue apply-ticket; do
 	render_command_template \
 		"${TEMPLATE_DIR}/.claude/commands/${command}.md" \
 		"${CLAUDE_DIR}/.claude/commands/${command}.md"

@@ -22,8 +22,8 @@
 - `daily-report.sh --config <file> [--json] [--latest <n>] [--include-proposed]`
 - `apply-ticket.sh --config <file> [--agent <name>] [--mode <mode>] [--pane <index>] <ticket-file|target/slug|slug>`
 - `mark-ticket.sh --config <file> --status <value> [--note <text>] <ticket-file|target/slug|slug>`
-- `dispatch-watch.sh --config <file> [--apply] [--interval <seconds>] [--once]`
-- `start-watch.sh --config <file> [--apply] [--interval <seconds>]`
+- `dispatch-watch.sh --config <file> [--apply] [--auto-apply] [--interval <seconds>] [--once]`
+- `start-watch.sh --config <file> [--apply] [--auto-apply] [--interval <seconds>]`
 - `stop-watch.sh --config <file>`
 - `cleanup-task.sh --config <file> [--delete-worktree] <target> <slug>`
 
@@ -56,6 +56,7 @@
   - `workspace dispatch <project> --text "..."`
   - `workspace queue <project> --json`
   - `workspace dispatch-watch <project> --once`
+  - `workspace dispatch-watch <project> --auto-apply --once`
   - `workspace start-review <project> ...`
   - `ws up <project>`
   - triage pane custom commands:
@@ -91,6 +92,7 @@
   - `workspace report <project>`
   - `workspace daily-report <project>`
   - `workspace watch <project>`
+  - `workspace watch <project> --auto-apply`
   - `workspace watch <project> --apply`
 - triage 입력을 inbox 파일로 저장:
   - `scripts/helpers/create-dispatch-request.sh --config config/<product>.env --text "..."`
