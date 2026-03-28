@@ -28,6 +28,7 @@ Commands:
   status <project>                Show tmux and worktree status
   intake-history <project>        Show recent intake classification decisions
   intake-report <project>         Summarize intake classification decisions
+  intake-tune <project>           Highlight likely intake false positives/negatives
   queue <project>                 Show dispatch ticket queue
   history <project>               Show recent done/blocked/canceled tickets
   report <project>                Summarize dispatch ticket state
@@ -96,6 +97,7 @@ for script in \
 	"${TMUX_DIR}/status.sh" \
 	"${TMUX_DIR}/intake-history.sh" \
 	"${TMUX_DIR}/intake-report.sh" \
+	"${TMUX_DIR}/intake-tune.sh" \
 	"${TMUX_DIR}/queue.sh" \
 	"${TMUX_DIR}/history.sh" \
 	"${TMUX_DIR}/report.sh" \
@@ -202,6 +204,9 @@ case "${COMMAND}" in
 		;;
 	intake-report)
 		exec "${TMUX_DIR}/intake-report.sh" --config "${CONFIG_FILE}" "$@"
+		;;
+	intake-tune)
+		exec "${TMUX_DIR}/intake-tune.sh" --config "${CONFIG_FILE}" "$@"
 		;;
 	queue)
 		exec "${TMUX_DIR}/queue.sh" --config "${CONFIG_FILE}" "$@"

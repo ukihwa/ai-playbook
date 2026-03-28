@@ -18,6 +18,7 @@
 - `status.sh --config <file>`
 - `intake-history.sh --config <file> [--json] [--classification <value>] [--latest <n>]`
 - `intake-report.sh --config <file> [--json]`
+- `intake-tune.sh --config <file> [--json] [--latest <n>]`
 - `queue.sh --config <file> [--json] [--status <value>] [--target <value>] [--latest <n>] [--count]`
 - `history.sh --config <file> [--json] [--status <csv>] [--latest <n>]`
 - `report.sh --config <file> [--json]`
@@ -46,6 +47,7 @@
   - `workspace status <project>`
   - `workspace intake-history <project>`
   - `workspace intake-report <project>`
+  - `workspace intake-tune <project>`
   - `workspace queue <project>`
   - `workspace queue <project> --status proposed`
   - `workspace queue <project> --latest 5`
@@ -101,6 +103,7 @@
   - `workspace intake-history <project>`
   - `workspace intake-history <project> --classification ignore`
   - `workspace intake-report <project>`
+  - `workspace intake-tune <project>`
 - queue에서 proposal 필터링/실행:
   - `workspace queue <project> --status proposed`
   - `workspace queue <project> --status needs-triage`

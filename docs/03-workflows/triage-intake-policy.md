@@ -79,12 +79,14 @@ triage 휴리스틱은 한 번 정하고 끝내지 않는다. 실제 사용 중 
 - `workspace intake-history <project>`
 - `workspace intake-history <project> --classification ignore`
 - `workspace intake-report <project>`
+- `workspace intake-tune <project>`
 
 이 로그는 다음을 보는 데 쓴다.
 
 - 인사나 잡담이 실수로 actionable로 들어갔는지
 - 실제 작업 요청이 ignore로 버려졌는지
 - 어떤 `reason`이 가장 자주 나오는지
+- 최근 샘플에서 오탐/누락 후보가 무엇인지
 
 ## Anti-Patterns
 
