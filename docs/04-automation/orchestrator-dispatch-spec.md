@@ -110,6 +110,16 @@ triage pane UX는 아래 custom command로 감싼다.
 
 실사용 triage UX에서는 일반 자연어 요청을 받았을 때 `workspace intake`를 먼저 쓰고, 그 안에서 inbox 생성과 watcher 1회 실행을 묶는 편이 가장 단순하다.
 
+`workspace intake`는 먼저 요청을 `actionable` vs `ignore`로 분류해야 한다.
+
+- `actionable`
+  - 구현, 수정, 정리, 개선, 리뷰, 조사, 설계처럼 실제 작업이 필요한 요청
+- `ignore`
+  - 짧은 인사
+  - 감사 표현
+  - 단순 잡담
+  - 실행 지시가 없는 일반 질문
+
 - `--apply` 없음:
   - 구조화 결과를 보여주고 종료
 - `--apply` 있음:

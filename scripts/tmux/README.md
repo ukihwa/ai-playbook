@@ -26,7 +26,7 @@
 - `request-triage.sh --config <file> [--note <text>] <ticket-file|target/slug|slug>`
 - `mark-ticket.sh --config <file> --status <value> [--note <text>] <ticket-file|target/slug|slug>`
 - `dispatch-watch.sh --config <file> [--apply] [--auto-apply] [--interval <seconds>] [--once]`
-- `intake.sh --config <file> [--text <request> | --file <path>] [--mode auto|apply|propose] [--interval <seconds>]`
+- `intake.sh --config <file> [--text <request> | --file <path>] [--mode auto|apply|propose] [--interval <seconds>] [--force] [--json]`
 - `start-watch.sh --config <file> [--apply] [--auto-apply] [--interval <seconds>]`
 - `stop-watch.sh --config <file>`
 - `cleanup-task.sh --config <file> [--delete-worktree] <target> <slug>`
@@ -166,6 +166,7 @@
 - triage pane 자체를 직접 파싱하기보다, 요청을 `DISPATCH_INBOX_ROOT`의 markdown/text 파일로 떨어뜨리고 `dispatch-watch`가 그것을 처리하는 방식이 더 안정적입니다.
 - 실사용 UX는 `dispatch-task -> enqueue-dispatch -> dispatch-watch` 흐름으로 구성하는 편이 자연스럽습니다.
 - triage에서 일반 자연어 구현 요청을 받으면, 내부적으로는 `workspace intake <project> --text "..."`를 기본 진입점으로 쓰는 것이 가장 단순합니다.
+- `intake`는 짧은 인사, 감사, 일반 질문 같은 non-actionable 대화는 무시하고, 실제 구현/리뷰/정리 요청만 dispatch inbox로 보냅니다.
 - high-risk 또는 ambiguous 변경은 worker/reviewer가 `request-triage`로 triage queue에 다시 올리고, triage가 `approve-ticket` 또는 `reject-ticket`으로 승인 게이트를 담당합니다.
 - task worktree 브랜치는 기본적으로 `codex/<target>/<slug>` 규칙을 사용합니다.
 - handoff는 task brief 파일을 기준으로 worker pane에 전달합니다.

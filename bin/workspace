@@ -37,7 +37,7 @@ Commands:
   mark-ticket <project> <id>      Update a dispatch ticket status
   dispatch-watch <project>        Watch a dispatch inbox directory and enqueue requests
   enqueue-dispatch <project>      Create a dispatch inbox request file from text or markdown
-  intake <project>                Enqueue a natural-language request and process it once
+  intake <project>                Classify a natural-language request and process actionable ones once
   watch <project>                 Start a tmux dispatch watcher window
   stop-watch <project>            Stop the tmux dispatch watcher window
   task <project> <target> <slug>  Create a worker window and worktree
