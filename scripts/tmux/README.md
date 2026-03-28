@@ -15,6 +15,8 @@
 - `review-task.sh --config <file> [--agent <claude|codex|gemini>] [--pane <index>] <target> <slug>`
 - `start-review.sh --config <file> [--agent <claude|codex|gemini>] <target> <slug>`
 - `status.sh --config <file>`
+- `queue.sh --config <file> [--json] [--status <value>] [--target <value>]`
+- `apply-ticket.sh --config <file> [--agent <name>] [--mode <mode>] [--pane <index>] <ticket-file|target/slug|slug>`
 - `dispatch-watch.sh --config <file> [--apply] [--interval <seconds>] [--once]`
 - `start-watch.sh --config <file> [--apply] [--interval <seconds>]`
 - `stop-watch.sh --config <file>`
@@ -31,6 +33,8 @@
   - `workspace stop-run <project> <fe|be|app>`
   - `workspace status <project>`
   - `workspace queue <project>`
+  - `workspace queue <project> --status proposed`
+  - `workspace apply-ticket <project> <ticket>`
   - `workspace dispatch-watch <project>`
   - `workspace enqueue-dispatch <project> --text "..."`
   - `workspace watch <project>`
@@ -65,6 +69,9 @@
 - 파일 inbox를 감시하며 자연어/markdown 요청 처리:
   - `scripts/tmux/dispatch-watch.sh --config config/<product>.env`
   - `scripts/tmux/dispatch-watch.sh --config config/<product>.env --apply`
+- queue에서 proposal 필터링/실행:
+  - `workspace queue <project> --status proposed`
+  - `workspace apply-ticket <project> backend/api`
   - `workspace watch <project>`
   - `workspace watch <project> --apply`
 - triage 입력을 inbox 파일로 저장:

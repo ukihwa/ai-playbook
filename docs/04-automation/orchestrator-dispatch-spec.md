@@ -238,6 +238,11 @@ dispatcher는 proposal/apply 결과를 `DISPATCH_TICKET_ROOT` 아래 JSON 파일
 - stale task detection
 - review queue seed
 
+후속 명령:
+
+- `workspace queue <project> --status proposed`
+- `workspace apply-ticket <project> <ticket>`
+
 ## Dispatch Inbox Watcher
 
 직접 tmux pane 텍스트를 스크레이핑하는 대신, triage 입력을 파일로 안정적으로 내리고 watcher가 처리한다.

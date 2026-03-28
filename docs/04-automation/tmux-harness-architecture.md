@@ -93,6 +93,8 @@ last_reviewed: 2026-03-27
 - `workspace stop-run <project> <fe|be|app>`
 - `workspace status <project>`
 - `workspace enqueue-dispatch <project> --text "..."`
+- `workspace queue <project> --status proposed`
+- `workspace apply-ticket <project> <ticket>`
 - `workspace dispatch-watch <project>`
 - `workspace watch <project>`
 - `workspace stop-watch <project>`

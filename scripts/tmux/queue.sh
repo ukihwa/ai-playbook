@@ -8,6 +8,8 @@ source "${SCRIPT_DIR}/common.sh"
 
 CONFIG_PATH=""
 JSON_OUTPUT="false"
+STATUS_FILTER=""
+TARGET_FILTER=""
 
 while [[ $# -gt 0 ]]; do
 	case "$1" in
@@ -19,24 +21,34 @@ while [[ $# -gt 0 ]]; do
 			JSON_OUTPUT="true"
 			shift
 			;;
+		--status)
+			STATUS_FILTER="$2"
+			shift 2
+			;;
+		--target)
+			TARGET_FILTER="$2"
+			shift 2
+			;;
 		*)
 			break
 			;;
 	esac
 done
 
-[[ $# -eq 0 ]] || die "usage: queue.sh --config <file> [--json]"
+[[ $# -eq 0 ]] || die "usage: queue.sh --config <file> [--json] [--status <value>] [--target <value>]"
 
 load_config "${CONFIG_PATH}"
 mkdir -p "${DISPATCH_TICKET_ROOT}"
 
-python3 - "${DISPATCH_TICKET_ROOT}" "${JSON_OUTPUT}" <<'PY'
+python3 - "${DISPATCH_TICKET_ROOT}" "${JSON_OUTPUT}" "${STATUS_FILTER}" "${TARGET_FILTER}" <<'PY'
 import json
 import sys
 from pathlib import Path
 
 root = Path(sys.argv[1])
 json_output = sys.argv[2] == "true"
+status_filter = sys.argv[3]
+target_filter = sys.argv[4]
 
 items = []
 for path in sorted(root.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True):
@@ -45,6 +57,10 @@ for path in sorted(root.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse
     except Exception:
         continue
     data["ticket_file"] = str(path)
+    if status_filter and data.get("status") != status_filter:
+        continue
+    if target_filter and data.get("target") != target_filter:
+        continue
     items.append(data)
 
 if json_output:
