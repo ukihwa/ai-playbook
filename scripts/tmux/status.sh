@@ -105,6 +105,14 @@ if recent:
     actionable = recent_counter.get("actionable", 0)
     ignore = recent_counter.get("ignore", 0)
     print(f" - recent(10): actionable={actionable}, ignore={ignore}")
+    latest = recent[0]
+    print(
+        f" - latest intake: [{latest.get('classification', 'unknown')}] "
+        f"{latest.get('reason', '')}"
+    )
+    request = latest.get("request")
+    if request:
+        print(f"   - request: {request}")
 PY
 }
 
