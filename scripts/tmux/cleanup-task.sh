@@ -8,6 +8,7 @@ source "${SCRIPT_DIR}/common.sh"
 
 CONFIG_PATH=""
 DELETE_WORKTREE="false"
+POSITIONAL=()
 
 while [[ $# -gt 0 ]]; do
 	case "$1" in
@@ -20,15 +21,24 @@ while [[ $# -gt 0 ]]; do
 			shift
 			;;
 		*)
-			break
+			POSITIONAL+=("$1")
+			shift
 			;;
 	esac
 done
 
-[[ $# -eq 2 ]] || die "usage: cleanup-task.sh --config <file> [--delete-worktree] <target> <slug>"
-
-TARGET="$1"
-SLUG="$2"
+if [[ ${#POSITIONAL[@]} -eq 1 ]]; then
+	if [[ "${POSITIONAL[0]}" != */* ]]; then
+		die "usage: cleanup-task.sh --config <file> [--delete-worktree] <target> <slug> | <target/slug>"
+	fi
+	TARGET="${POSITIONAL[0]%%/*}"
+	SLUG="${POSITIONAL[0]#*/}"
+elif [[ ${#POSITIONAL[@]} -eq 2 ]]; then
+	TARGET="${POSITIONAL[0]}"
+	SLUG="${POSITIONAL[1]}"
+else
+	die "usage: cleanup-task.sh --config <file> [--delete-worktree] <target> <slug> | <target/slug>"
+fi
 
 need_cmd tmux
 need_cmd git

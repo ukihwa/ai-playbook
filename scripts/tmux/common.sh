@@ -97,6 +97,12 @@ tmux_window_exists() {
 	tmux list-windows -t "${TMUX_SESSION}" -F '#W' 2>/dev/null | grep -Fxq "${window_name}"
 }
 
+tmux_window_id() {
+	local window_name="$1"
+	tmux list-windows -t "${TMUX_SESSION}" -F '#{window_id}\t#{window_name}' 2>/dev/null \
+		| awk -F '\t' -v name="${window_name}" '$2 == name { print $1; exit }'
+}
+
 ensure_window() {
 	local window_name="$1"
 	local window_dir="$2"
@@ -110,7 +116,13 @@ ensure_window() {
 
 pane_path() {
 	local window_name="$1"
-	printf '%s:%s' "${TMUX_SESSION}" "${window_name}"
+	local window_id=""
+	window_id="$(tmux_window_id "${window_name}" || true)"
+	if [[ -n "${window_id}" ]]; then
+		printf '%s' "${window_id}"
+	else
+		printf '%s:%s' "${TMUX_SESSION}" "${window_name}"
+	fi
 }
 
 tmux_pane_target() {
