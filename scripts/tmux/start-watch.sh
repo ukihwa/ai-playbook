@@ -68,29 +68,35 @@ if [[ "${AUTO_APPLY}" == "true" ]]; then
 fi
 tmux send-keys -t "${WATCH_PANE_TARGET}" "${WATCH_CMD}" C-m
 
-ensure_window "${TRIAGE_BRIDGE_WINDOW_NAME}" "${TRIAGE_BRIDGE_DIR}"
-elapsed=0
-while ! tmux_window_exists "${TRIAGE_BRIDGE_WINDOW_NAME}"; do
-	sleep 1
-	((elapsed += 1))
-	if (( elapsed >= 5 )); then
-		die "failed to create triage bridge window '${TRIAGE_BRIDGE_WINDOW_NAME}'"
+TRIAGE_BRIDGE_CMD=""
+TRIAGE_BRIDGE_MODE=""
+if [[ "${TRIAGE_MODE:-console}" != "console" ]]; then
+	ensure_window "${TRIAGE_BRIDGE_WINDOW_NAME}" "${TRIAGE_BRIDGE_DIR}"
+	elapsed=0
+	while ! tmux_window_exists "${TRIAGE_BRIDGE_WINDOW_NAME}"; do
+		sleep 1
+		((elapsed += 1))
+		if (( elapsed >= 5 )); then
+			die "failed to create triage bridge window '${TRIAGE_BRIDGE_WINDOW_NAME}'"
+		fi
+	done
+
+	TRIAGE_BRIDGE_PANE_TARGET="$(tmux list-panes -t "$(pane_path "${TRIAGE_BRIDGE_WINDOW_NAME}")" -F '#{pane_id}' | head -n 1)"
+	[[ -n "${TRIAGE_BRIDGE_PANE_TARGET}" ]] || die "failed to resolve triage bridge pane for '${TRIAGE_BRIDGE_WINDOW_NAME}'"
+	tmux send-keys -t "${TRIAGE_BRIDGE_PANE_TARGET}" C-c
+	tmux send-keys -t "${TRIAGE_BRIDGE_PANE_TARGET}" "cd ${TRIAGE_BRIDGE_DIR}" C-m
+
+	TRIAGE_BRIDGE_MODE="propose"
+	if [[ "${APPLY}" == "true" ]]; then
+		TRIAGE_BRIDGE_MODE="apply"
+	elif [[ "${AUTO_APPLY}" == "true" ]]; then
+		TRIAGE_BRIDGE_MODE="auto"
 	fi
-done
-
-TRIAGE_BRIDGE_PANE_TARGET="$(tmux list-panes -t "$(pane_path "${TRIAGE_BRIDGE_WINDOW_NAME}")" -F '#{pane_id}' | head -n 1)"
-[[ -n "${TRIAGE_BRIDGE_PANE_TARGET}" ]] || die "failed to resolve triage bridge pane for '${TRIAGE_BRIDGE_WINDOW_NAME}'"
-tmux send-keys -t "${TRIAGE_BRIDGE_PANE_TARGET}" C-c
-tmux send-keys -t "${TRIAGE_BRIDGE_PANE_TARGET}" "cd ${TRIAGE_BRIDGE_DIR}" C-m
-
-TRIAGE_BRIDGE_MODE="propose"
-if [[ "${APPLY}" == "true" ]]; then
-	TRIAGE_BRIDGE_MODE="apply"
-elif [[ "${AUTO_APPLY}" == "true" ]]; then
-	TRIAGE_BRIDGE_MODE="auto"
+	TRIAGE_BRIDGE_CMD="${SCRIPT_DIR}/triage-bridge.sh --config ${CONFIG_PATH} --interval ${INTERVAL_SECONDS} --mode ${TRIAGE_BRIDGE_MODE}"
+	tmux send-keys -t "${TRIAGE_BRIDGE_PANE_TARGET}" "${TRIAGE_BRIDGE_CMD}" C-m
+elif tmux_window_exists "${TRIAGE_BRIDGE_WINDOW_NAME}"; then
+	tmux kill-window -t "$(pane_path "${TRIAGE_BRIDGE_WINDOW_NAME}")"
 fi
-TRIAGE_BRIDGE_CMD="${SCRIPT_DIR}/triage-bridge.sh --config ${CONFIG_PATH} --interval ${INTERVAL_SECONDS} --mode ${TRIAGE_BRIDGE_MODE}"
-tmux send-keys -t "${TRIAGE_BRIDGE_PANE_TARGET}" "${TRIAGE_BRIDGE_CMD}" C-m
 
 print_header "dispatch watcher started"
 echo "session: ${TMUX_SESSION}"
@@ -100,6 +106,10 @@ echo "apply: ${APPLY}"
 echo "auto_apply: ${AUTO_APPLY}"
 echo "interval_seconds: ${INTERVAL_SECONDS}"
 echo "command: ${WATCH_CMD}"
-echo "triage_bridge_window: ${TRIAGE_BRIDGE_WINDOW_NAME}"
-echo "triage_bridge_mode: ${TRIAGE_BRIDGE_MODE}"
-echo "triage_bridge_command: ${TRIAGE_BRIDGE_CMD}"
+if [[ -n "${TRIAGE_BRIDGE_CMD}" ]]; then
+	echo "triage_bridge_window: ${TRIAGE_BRIDGE_WINDOW_NAME}"
+	echo "triage_bridge_mode: ${TRIAGE_BRIDGE_MODE}"
+	echo "triage_bridge_command: ${TRIAGE_BRIDGE_CMD}"
+else
+	echo "triage_bridge: disabled (triage console mode)"
+fi

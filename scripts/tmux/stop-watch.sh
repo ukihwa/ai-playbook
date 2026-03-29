@@ -38,7 +38,12 @@ else
 	echo "window: ${WINDOW_NAME}"
 fi
 
-if tmux_window_exists "${TRIAGE_BRIDGE_WINDOW_NAME}"; then
+if [[ "${TRIAGE_MODE:-console}" == "console" ]] && tmux_window_exists "${TRIAGE_BRIDGE_WINDOW_NAME}"; then
+	tmux kill-window -t "$(pane_path "${TRIAGE_BRIDGE_WINDOW_NAME}")"
+	print_header "triage bridge removed"
+	echo "session: ${TMUX_SESSION}"
+	echo "window: ${TRIAGE_BRIDGE_WINDOW_NAME}"
+elif [[ "${TRIAGE_MODE:-console}" != "console" ]] && tmux_window_exists "${TRIAGE_BRIDGE_WINDOW_NAME}"; then
 	tmux send-keys -t "$(pane_path "${TRIAGE_BRIDGE_WINDOW_NAME}").0" C-c
 	print_header "triage bridge stopped"
 	echo "session: ${TMUX_SESSION}"

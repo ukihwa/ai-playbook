@@ -38,6 +38,13 @@ bootstrap_window_if_exists() {
 	fi
 }
 
+bootstrap_triage_console() {
+	if tmux_window_exists "triage"; then
+		tmux respawn-pane -k -t "$(pane_path "triage").0" -c "${TRIAGE_DIR}" \
+			"${SCRIPT_DIR}/triage-console.sh --config ${CONFIG_PATH} --mode auto"
+	fi
+}
+
 need_cmd tmux
 load_config "${CONFIG_PATH}"
 
@@ -67,7 +74,11 @@ echo "session: ${TMUX_SESSION}"
 tmux list-windows -t "${TMUX_SESSION}" -F ' - #W -> #{pane_current_path}'
 
 if [[ "${BOOTSTRAP_DEFAULTS}" == "true" ]]; then
-	bootstrap_window_if_exists "triage" "claude"
+	if [[ "${TRIAGE_MODE:-console}" == "console" ]]; then
+		bootstrap_triage_console
+	else
+		bootstrap_window_if_exists "triage" "claude"
+	fi
 	bootstrap_window_if_exists "claude-fe" "claude"
 	bootstrap_window_if_exists "claude-be" "claude"
 	bootstrap_window_if_exists "claude-app" "claude"
