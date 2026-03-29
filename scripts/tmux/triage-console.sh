@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -euo pipefail
+set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck disable=SC1091
@@ -49,6 +49,23 @@ esac
 need_cmd python3
 load_config "${CONFIG_PATH}"
 
+run_helper() {
+	local description="$1"
+	shift
+	if ! "$@"; then
+		echo "error: ${description} failed"
+		return 1
+	fi
+	return 0
+}
+
+restore_triage_focus() {
+	if tmux_has_session && tmux_window_exists "triage"; then
+		tmux select-window -t "$(pane_path "triage")" >/dev/null 2>&1 || true
+		tmux select-pane -t "$(tmux_pane_target "triage" 0)" >/dev/null 2>&1 || true
+	fi
+}
+
 echo "== triage console =="
 echo "project: ${PRODUCT_NAME}"
 echo "mode: ${MODE_VALUE}"
@@ -72,20 +89,24 @@ while true; do
 			exit 0
 			;;
 		/status)
-			"${SCRIPT_DIR}/status.sh" --config "${CONFIG_PATH}"
+			run_helper "status" "${SCRIPT_DIR}/status.sh" --config "${CONFIG_PATH}" || true
+			restore_triage_focus
 			continue
 			;;
 		/queue)
-			"${SCRIPT_DIR}/queue.sh" --config "${CONFIG_PATH}"
+			run_helper "queue" "${SCRIPT_DIR}/queue.sh" --config "${CONFIG_PATH}" || true
+			restore_triage_focus
 			continue
 			;;
 		/queue-needs)
-			"${SCRIPT_DIR}/queue.sh" --config "${CONFIG_PATH}" --status needs-triage
+			run_helper "queue-needs" "${SCRIPT_DIR}/queue.sh" --config "${CONFIG_PATH}" --status needs-triage || true
+			restore_triage_focus
 			continue
 			;;
 		/approve\ *)
 			ticket="${line#"/approve "}"
-			"${SCRIPT_DIR}/approve-ticket.sh" --config "${CONFIG_PATH}" "${ticket}"
+			run_helper "approve-ticket" "${SCRIPT_DIR}/approve-ticket.sh" --config "${CONFIG_PATH}" "${ticket}" || true
+			restore_triage_focus
 			continue
 			;;
 		/reject\ *)
@@ -96,10 +117,11 @@ while true; do
 				note="${rest#${ticket} }"
 			fi
 			if [[ -n "${note}" ]]; then
-				"${SCRIPT_DIR}/reject-ticket.sh" --config "${CONFIG_PATH}" --note "${note}" "${ticket}"
+				run_helper "reject-ticket" "${SCRIPT_DIR}/reject-ticket.sh" --config "${CONFIG_PATH}" --note "${note}" "${ticket}" || true
 			else
-				"${SCRIPT_DIR}/reject-ticket.sh" --config "${CONFIG_PATH}" "${ticket}"
+				run_helper "reject-ticket" "${SCRIPT_DIR}/reject-ticket.sh" --config "${CONFIG_PATH}" "${ticket}" || true
 			fi
+			restore_triage_focus
 			continue
 			;;
 		/*)
@@ -108,8 +130,14 @@ while true; do
 			;;
 	esac
 
-	result="$("${SCRIPT_DIR}/intake.sh" --config "${CONFIG_PATH}" --mode "${MODE_VALUE}" --json --text "${line}")"
-	python3 - "${result}" <<'PY'
+	if ! result="$("${SCRIPT_DIR}/intake.sh" --config "${CONFIG_PATH}" --mode "${MODE_VALUE}" --json --text "${line}" 2>&1)"; then
+		echo "error: intake failed"
+		echo "${result}"
+		restore_triage_focus
+		continue
+	fi
+
+	if ! python3 - "${result}" <<'PY'
 import json
 import sys
 
@@ -120,4 +148,11 @@ if classification == "ignore":
 else:
     print(f"queued: {payload.get('request', '')}")
 PY
+	then
+		echo "error: failed to parse intake result"
+		echo "${result}"
+		restore_triage_focus
+		continue
+	fi
+	restore_triage_focus
 done
