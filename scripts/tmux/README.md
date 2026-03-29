@@ -160,6 +160,7 @@
 - `AGENT_CLAUDE_CMD`
 - `AGENT_CODEX_CMD`
 - `AGENT_GEMINI_CMD`
+- `TRIAGE_AGENT_DIR`
 - `RUN_FE_DIR`, `RUN_BE_DIR`, `RUN_APP_DIR`
 - `RUN_FE_CMD`, `RUN_BE_CMD`, `RUN_APP_CMD`
 - `RUN_FE_PRE_CMD`, `RUN_BE_PRE_CMD`, `RUN_APP_PRE_CMD`
@@ -186,6 +187,7 @@
 - `triage-watch`는 일반 자연어만 대상으로 하며, slash command(`/...`)는 자동 intake 대상으로 삼지 않습니다.
 - 실사용 UX는 `dispatch-task -> enqueue-dispatch -> dispatch-watch` 흐름으로 구성하는 편이 자연스럽습니다.
 - triage에서 일반 자연어 구현 요청을 받으면, 내부적으로는 `workspace intake <project> --text "..."`를 기본 진입점으로 쓰는 것이 가장 단순합니다.
+- `TRIAGE_AGENT_DIR`를 설정하면 triage 창은 전용 supervisor CLAUDE 문맥으로 부팅되고, 구현 창과 역할을 더 명확히 분리할 수 있습니다.
 - `intake`는 짧은 인사, 감사, 일반 질문 같은 non-actionable 대화는 무시하고, 실제 구현/리뷰/정리 요청만 dispatch inbox로 보냅니다.
 - `intake`는 모든 판단 결과를 `INTAKE_AUDIT_ROOT`에 남겨 나중에 오탐/누락을 조정할 수 있게 합니다.
 - high-risk 또는 ambiguous 변경은 worker/reviewer가 `request-triage`로 triage queue에 다시 올리고, triage가 `approve-ticket` 또는 `reject-ticket`으로 승인 게이트를 담당합니다.

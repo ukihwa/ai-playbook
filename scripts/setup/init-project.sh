@@ -238,6 +238,7 @@ WORKTREE_ROOT=${WORKTREE_ROOT}
 TRIAGE_DIR=${ROOT_PATH}
 DISPATCH_TICKET_ROOT=${ROOT_PATH}/.dispatch-tickets
 DISPATCH_INBOX_ROOT=${ROOT_PATH}/docs/tasks/dispatch-inbox
+TRIAGE_AGENT_DIR=${ROOT_PATH}/.triage
 
 AGENT_CLAUDE_CMD=/Users/ukihwa/.local/bin/claude
 AGENT_CODEX_CMD=/Applications/Codex.app/Contents/Resources/codex
@@ -264,6 +265,7 @@ EOF
 write_file "${CONFIG_PATH}" "${CONFIG_CONTENT}"$'\n'
 
 copy_if_missing "${TEMPLATE_DIR}/CLAUDE.md" "${ROOT_PATH}/CLAUDE.md"
+copy_if_missing "${TEMPLATE_DIR}/triage/CLAUDE.md" "${ROOT_PATH}/.triage/CLAUDE.md"
 copy_if_missing "${TEMPLATE_DIR}/docs/README.md" "${ROOT_PATH}/docs/README.md"
 copy_if_missing "${TEMPLATE_DIR}/docs/tasks/triage-status.md" "${ROOT_PATH}/docs/tasks/triage-status.md"
 
@@ -275,6 +277,9 @@ for command in triage-intake dispatch-task dispatch-now apply-dispatch watch-dis
 done
 
 append_ignore_if_missing "${ROOT_PATH}/.gitignore" ".dispatch-tickets/"
+append_ignore_if_missing "${ROOT_PATH}/.gitignore" ".dispatch-tickets-archive/"
+append_ignore_if_missing "${ROOT_PATH}/.gitignore" ".intake-audit/"
+append_ignore_if_missing "${ROOT_PATH}/.gitignore" ".triage-bridge/"
 append_ignore_if_missing "${ROOT_PATH}/.gitignore" "docs/tasks/dispatch-inbox/"
 append_ignore_if_missing "${ROOT_PATH}/.gitignore" "docs/tasks/handoffs/"
 append_ignore_if_missing "${ROOT_PATH}/.gitignore" ".review-artifacts/"
