@@ -60,47 +60,6 @@ esac
 load_config "${CONFIG_PATH}"
 mkdir -p "${DISPATCH_TICKET_ROOT}"
 
-resolve_ticket_file() {
-	local input="$1"
-	if [[ -f "${input}" ]]; then
-		printf '%s' "${input}"
-		return
-	fi
-
-	if [[ -f "${DISPATCH_TICKET_ROOT}/${input}.json" ]]; then
-		printf '%s' "${DISPATCH_TICKET_ROOT}/${input}.json"
-		return
-	fi
-
-	local normalized="${input//\//-}"
-	if [[ -f "${DISPATCH_TICKET_ROOT}/${normalized}.json" ]]; then
-		printf '%s' "${DISPATCH_TICKET_ROOT}/${normalized}.json"
-		return
-	fi
-
-	local matches=()
-	local path=""
-	local base=""
-	while IFS= read -r path; do
-		[[ -n "${path}" ]] || continue
-		base="$(basename "${path}" .json)"
-		if [[ "${base}" == *"${normalized}"* ]]; then
-			matches+=("${path}")
-		fi
-	done < <(find "${DISPATCH_TICKET_ROOT}" -maxdepth 1 -type f -name '*.json' | sort)
-
-	if (( ${#matches[@]} == 1 )); then
-		printf '%s' "${matches[0]}"
-		return
-	fi
-	if (( ${#matches[@]} > 1 )); then
-		printf 'error: multiple tickets match "%s"\n' "${input}" >&2
-		printf '  - %s\n' "${matches[@]}" >&2
-		exit 1
-	fi
-	die "ticket not found: ${input}"
-}
-
 TICKET_FILE="$(resolve_ticket_file "${TICKET_INPUT}")"
 
 python3 - "${TICKET_FILE}" "${STATUS_VALUE}" "${NOTE_VALUE}" <<'PY'

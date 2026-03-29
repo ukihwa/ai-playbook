@@ -12,6 +12,7 @@ STATUS_FILTER=""
 TARGET_FILTER=""
 LATEST_LIMIT=""
 COUNT_ONLY="false"
+INCLUDE_ARCHIVED="false"
 
 while [[ $# -gt 0 ]]; do
 	case "$1" in
@@ -39,41 +40,66 @@ while [[ $# -gt 0 ]]; do
 			COUNT_ONLY="true"
 			shift
 			;;
+		--include-archived)
+			INCLUDE_ARCHIVED="true"
+			shift
+			;;
 		*)
 			break
 			;;
 	esac
 done
 
-[[ $# -eq 0 ]] || die "usage: queue.sh --config <file> [--json] [--status <value>] [--target <value>] [--latest <n>] [--count]"
+[[ $# -eq 0 ]] || die "usage: queue.sh --config <file> [--json] [--status <value>] [--target <value>] [--latest <n>] [--count] [--include-archived]"
 
 load_config "${CONFIG_PATH}"
-mkdir -p "${DISPATCH_TICKET_ROOT}"
+mkdir -p "${DISPATCH_TICKET_ROOT}" "${DISPATCH_ARCHIVE_ROOT}"
 
-python3 - "${DISPATCH_TICKET_ROOT}" "${JSON_OUTPUT}" "${STATUS_FILTER}" "${TARGET_FILTER}" "${LATEST_LIMIT}" "${COUNT_ONLY}" <<'PY'
+python3 - "${DISPATCH_TICKET_ROOT}" "${DISPATCH_ARCHIVE_ROOT}" "${JSON_OUTPUT}" "${STATUS_FILTER}" "${TARGET_FILTER}" "${LATEST_LIMIT}" "${COUNT_ONLY}" "${INCLUDE_ARCHIVED}" <<'PY'
 import json
 import sys
 from pathlib import Path
 
 root = Path(sys.argv[1])
-json_output = sys.argv[2] == "true"
-status_filter = sys.argv[3]
-target_filter = sys.argv[4]
-latest_limit = int(sys.argv[5]) if sys.argv[5] else None
-count_only = sys.argv[6] == "true"
+archive_root = Path(sys.argv[2])
+json_output = sys.argv[3] == "true"
+status_filter = sys.argv[4]
+target_filter = sys.argv[5]
+latest_limit = int(sys.argv[6]) if sys.argv[6] else None
+count_only = sys.argv[7] == "true"
+include_archived = sys.argv[8] == "true"
+active_statuses = {
+    "proposed",
+    "needs-triage",
+    "approved",
+    "approved-task",
+    "approved-review",
+    "applied-task",
+    "applied-review",
+}
 
 items = []
-for path in sorted(root.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True):
-    try:
-        data = json.loads(path.read_text())
-    except Exception:
-        continue
-    data["ticket_file"] = str(path)
-    if status_filter and data.get("status") != status_filter:
-        continue
-    if target_filter and data.get("target") != target_filter:
-        continue
-    items.append(data)
+roots = [root]
+if include_archived and archive_root.exists():
+    roots.append(archive_root)
+
+for current_root in roots:
+    for path in sorted(current_root.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True):
+        try:
+            data = json.loads(path.read_text())
+        except Exception:
+            continue
+        data["ticket_file"] = str(path)
+        if status_filter:
+            if data.get("status") != status_filter:
+                continue
+        elif data.get("status") not in active_statuses:
+            continue
+        if target_filter and data.get("target") != target_filter:
+            continue
+        items.append(data)
+
+items.sort(key=lambda item: Path(item["ticket_file"]).stat().st_mtime, reverse=True)
 
 if latest_limit is not None:
     items = items[:latest_limit]

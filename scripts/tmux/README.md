@@ -32,6 +32,8 @@
 - `intake.sh --config <file> [--text <request> | --file <path>] [--mode auto|apply|propose] [--interval <seconds>] [--force] [--json]`
 - `start-watch.sh --config <file> [--apply] [--auto-apply] [--interval <seconds>]`
 - `stop-watch.sh --config <file>`
+- `archive-ticket.sh --config <file> <ticket-file|target/slug|slug>`
+- `archive-completed.sh --config <file> [--latest <n>]`
 - `cleanup-task.sh --config <file> [--delete-worktree] <target> <slug>`
 
 ## Common Flows
@@ -50,6 +52,7 @@
   - `workspace intake-report <project>`
   - `workspace intake-tune <project>`
   - `workspace queue <project>`
+  - `workspace queue <project> --include-archived`
   - `workspace queue <project> --status proposed`
   - `workspace queue <project> --latest 5`
   - `workspace queue <project> --count`
@@ -66,6 +69,8 @@
   - `workspace intake <project> --text "..."`
   - `workspace watch <project>`
   - `workspace stop-watch <project>`
+  - `workspace archive-ticket <project> <ticket>`
+  - `workspace archive-completed <project>`
   - `workspace start-task <project> ...`
   - `workspace task-from-spec <project> ...`
   - `workspace dispatch <project> --text "..."`

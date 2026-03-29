@@ -45,6 +45,7 @@ load_config() {
 	HANDOFF_ROOT="${HANDOFF_ROOT:-${TRIAGE_DIR}/docs/tasks/handoffs}"
 	REVIEW_ARTIFACT_ROOT="${REVIEW_ARTIFACT_ROOT:-${TRIAGE_DIR}/.review-artifacts}"
 	DISPATCH_TICKET_ROOT="${DISPATCH_TICKET_ROOT:-${TRIAGE_DIR}/.dispatch-tickets}"
+	DISPATCH_ARCHIVE_ROOT="${DISPATCH_ARCHIVE_ROOT:-${TRIAGE_DIR}/.dispatch-tickets-archive}"
 	DISPATCH_INBOX_ROOT="${DISPATCH_INBOX_ROOT:-${TRIAGE_DIR}/docs/tasks/dispatch-inbox}"
 	INTAKE_AUDIT_ROOT="${INTAKE_AUDIT_ROOT:-${TRIAGE_DIR}/.intake-audit}"
 	AGENT_CLAUDE_CMD="${AGENT_CLAUDE_CMD:-claude}"
@@ -228,4 +229,56 @@ resolve_agent_command() {
 			die "unsupported agent '${agent}'. use claude, codex, or gemini"
 			;;
 	esac
+}
+
+resolve_ticket_file() {
+	local input="$1"
+	local roots=("${DISPATCH_TICKET_ROOT}")
+	if [[ -n "${DISPATCH_ARCHIVE_ROOT:-}" ]]; then
+		roots+=("${DISPATCH_ARCHIVE_ROOT}")
+	fi
+
+	if [[ -f "${input}" ]]; then
+		printf '%s' "${input}"
+		return
+	fi
+
+	local root=""
+	local normalized="${input//\//-}"
+	for root in "${roots[@]}"; do
+		[[ -d "${root}" ]] || continue
+
+		if [[ -f "${root}/${input}.json" ]]; then
+			printf '%s' "${root}/${input}.json"
+			return
+		fi
+
+		if [[ -f "${root}/${normalized}.json" ]]; then
+			printf '%s' "${root}/${normalized}.json"
+			return
+		fi
+
+		local matches=()
+		local path=""
+		local base=""
+		while IFS= read -r path; do
+			[[ -n "${path}" ]] || continue
+			base="$(basename "${path}" .json)"
+			if [[ "${base}" == *"${normalized}"* ]]; then
+				matches+=("${path}")
+			fi
+		done < <(find "${root}" -maxdepth 1 -type f -name '*.json' | sort)
+
+		if (( ${#matches[@]} == 1 )); then
+			printf '%s' "${matches[0]}"
+			return
+		fi
+		if (( ${#matches[@]} > 1 )); then
+			printf 'error: multiple tickets match "%s"\n' "${input}" >&2
+			printf '  - %s\n' "${matches[@]}" >&2
+			exit 1
+		fi
+	done
+
+	die "ticket not found: ${input}"
 }

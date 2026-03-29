@@ -36,29 +36,35 @@ while [[ $# -gt 0 ]]; do
 done
 
 load_config "${CONFIG_PATH}"
-mkdir -p "${DISPATCH_TICKET_ROOT}"
+mkdir -p "${DISPATCH_TICKET_ROOT}" "${DISPATCH_ARCHIVE_ROOT}"
 
-python3 - "${DISPATCH_TICKET_ROOT}" "${JSON_OUTPUT}" "${STATUS_FILTER}" "${LATEST_LIMIT}" <<'PY'
+python3 - "${DISPATCH_TICKET_ROOT}" "${DISPATCH_ARCHIVE_ROOT}" "${JSON_OUTPUT}" "${STATUS_FILTER}" "${LATEST_LIMIT}" <<'PY'
 import json
 import sys
 from pathlib import Path
 
 root = Path(sys.argv[1])
-json_output = sys.argv[2] == "true"
-status_filter = {item.strip() for item in sys.argv[3].split(",") if item.strip()}
-latest_limit = int(sys.argv[4])
+archive_root = Path(sys.argv[2])
+json_output = sys.argv[3] == "true"
+status_filter = {item.strip() for item in sys.argv[4].split(",") if item.strip()}
+latest_limit = int(sys.argv[5])
 
 items = []
-for path in sorted(root.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True):
-    try:
-        data = json.loads(path.read_text())
-    except Exception:
+for current_root in [root, archive_root]:
+    if not current_root.exists():
         continue
-    status = data.get("status", "unknown")
-    if status_filter and status not in status_filter:
-        continue
-    data["ticket_file"] = str(path)
-    items.append(data)
+    for path in sorted(current_root.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True):
+        try:
+            data = json.loads(path.read_text())
+        except Exception:
+            continue
+        status = data.get("status", "unknown")
+        if status_filter and status not in status_filter:
+            continue
+        data["ticket_file"] = str(path)
+        items.append(data)
+
+items.sort(key=lambda item: Path(item["ticket_file"]).stat().st_mtime, reverse=True)
 
 items = items[:latest_limit]
 
