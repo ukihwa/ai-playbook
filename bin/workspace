@@ -33,6 +33,7 @@ Commands:
   history <project>               Show recent done/blocked/canceled tickets
   report <project>                Summarize dispatch ticket state
   daily-report <project>          Draft one-line daily report items from tickets
+  finish-task <project> <id>      Mark, archive, and clean up a completed task
   apply-ticket <project> <id>     Execute a proposed dispatch ticket
   approve-ticket <project> <id>   Approve a needs-triage ticket and execute it
   reject-ticket <project> <id>    Reject a needs-triage ticket
@@ -104,6 +105,7 @@ for script in \
 	"${TMUX_DIR}/history.sh" \
 	"${TMUX_DIR}/report.sh" \
 	"${TMUX_DIR}/daily-report.sh" \
+	"${TMUX_DIR}/finish-task.sh" \
 	"${TMUX_DIR}/apply-ticket.sh" \
 	"${TMUX_DIR}/approve-ticket.sh" \
 	"${TMUX_DIR}/reject-ticket.sh" \
@@ -224,6 +226,9 @@ case "${COMMAND}" in
 		;;
 	daily-report)
 		exec "${TMUX_DIR}/daily-report.sh" --config "${CONFIG_FILE}" "$@"
+		;;
+	finish-task)
+		exec "${TMUX_DIR}/finish-task.sh" --config "${CONFIG_FILE}" "$@"
 		;;
 	apply-ticket)
 		exec "${TMUX_DIR}/apply-ticket.sh" --config "${CONFIG_FILE}" "$@"

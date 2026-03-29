@@ -23,6 +23,7 @@
 - `history.sh --config <file> [--json] [--status <csv>] [--latest <n>]`
 - `report.sh --config <file> [--json]`
 - `daily-report.sh --config <file> [--json] [--latest <n>] [--include-proposed]`
+- `finish-task.sh --config <file> [--status <done|blocked|canceled|rejected>] [--note <text>] [--keep-ticket] [--keep-window] [--keep-worktree] [--dry-run] <ticket-file|target/slug|slug>`
 - `apply-ticket.sh --config <file> [--agent <name>] [--mode <mode>] [--pane <index>] <ticket-file|target/slug|slug>`
 - `approve-ticket.sh --config <file> [--agent <name>] [--mode <mode>] [--pane <index>] [--note <text>] <ticket-file|target/slug|slug>`
 - `reject-ticket.sh --config <file> [--note <text>] <ticket-file|target/slug|slug>`
@@ -61,6 +62,7 @@
   - `workspace history <project>`
   - `workspace report <project>`
   - `workspace daily-report <project>`
+  - `workspace finish-task <project> <ticket>`
   - `workspace apply-ticket <project> <ticket>`
   - `workspace approve-ticket <project> <ticket>`
   - `workspace reject-ticket <project> <ticket>`
@@ -125,6 +127,7 @@
   - `workspace history <project>`
   - `workspace report <project>`
   - `workspace daily-report <project>`
+  - `workspace finish-task <project> <ticket>`
   - `workspace watch <project>`
   - `workspace watch <project> --auto-apply`
   - `workspace watch <project> --apply`
