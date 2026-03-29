@@ -25,6 +25,7 @@ load_config "${CONFIG_PATH}"
 tmux_has_session || die "tmux session '${TMUX_SESSION}' does not exist."
 
 WINDOW_NAME="${DISPATCH_WATCH_WINDOW:-dispatch-watch}"
+TRIAGE_BRIDGE_WINDOW_NAME="${TRIAGE_BRIDGE_WINDOW_NAME:-triage-watch}"
 
 if tmux_window_exists "${WINDOW_NAME}"; then
 	tmux send-keys -t "$(pane_path "${WINDOW_NAME}").0" C-c
@@ -35,4 +36,15 @@ else
 	print_header "dispatch watcher already stopped"
 	echo "session: ${TMUX_SESSION}"
 	echo "window: ${WINDOW_NAME}"
+fi
+
+if tmux_window_exists "${TRIAGE_BRIDGE_WINDOW_NAME}"; then
+	tmux send-keys -t "$(pane_path "${TRIAGE_BRIDGE_WINDOW_NAME}").0" C-c
+	print_header "triage bridge stopped"
+	echo "session: ${TMUX_SESSION}"
+	echo "window: ${TRIAGE_BRIDGE_WINDOW_NAME}"
+else
+	print_header "triage bridge already stopped"
+	echo "session: ${TMUX_SESSION}"
+	echo "window: ${TRIAGE_BRIDGE_WINDOW_NAME}"
 fi

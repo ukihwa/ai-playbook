@@ -273,8 +273,15 @@ try:
     watch = {"status": "running", "command": cmd or "unknown"}
 except subprocess.CalledProcessError:
     watch = {"status": "stopped"}
+try:
+    panes = run(["tmux", "list-panes", "-t", f"{session}:triage-watch", "-F", "#{pane_id}"])
+    pane_id = panes.splitlines()[0]
+    cmd = run(["tmux", "display-message", "-p", "-t", pane_id, "#{pane_current_command}"])
+    triage_watch = {"status": "running", "command": cmd or "unknown"}
+except subprocess.CalledProcessError:
+    triage_watch = {"status": "stopped"}
 
-print(json.dumps({"runtimes": entries, "watch": watch}, ensure_ascii=False))
+print(json.dumps({"runtimes": entries, "watch": watch, "triage_watch": triage_watch}, ensure_ascii=False))
 PY
 
 	if [[ -d "${WORKTREE_ROOT}" ]]; then
@@ -370,6 +377,14 @@ if tmux_has_session; then
 		echo " - dispatch-watch | cmd=${watch_command:-unknown} | status=running"
 	else
 		echo " - dispatch-watch | status=stopped"
+	fi
+
+	if tmux_window_exists "triage-watch"; then
+		triage_watch_pane_id="$(tmux list-panes -t "$(pane_path "triage-watch")" -F '#{pane_id}' | head -n 1)"
+		triage_watch_command="$(tmux display-message -p -t "${triage_watch_pane_id}" '#{pane_current_command}' 2>/dev/null || true)"
+		echo " - triage-watch | cmd=${triage_watch_command:-unknown} | status=running"
+	else
+		echo " - triage-watch | status=stopped"
 	fi
 else
 	echo " - session not created"

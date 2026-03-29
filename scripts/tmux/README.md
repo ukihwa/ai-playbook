@@ -29,6 +29,7 @@
 - `request-triage.sh --config <file> [--note <text>] <ticket-file|target/slug|slug>`
 - `mark-ticket.sh --config <file> --status <value> [--note <text>] <ticket-file|target/slug|slug>`
 - `dispatch-watch.sh --config <file> [--apply] [--auto-apply] [--interval <seconds>] [--once]`
+- `triage-bridge.sh --config <file> [--interval <seconds>] [--mode auto|apply|propose]`
 - `intake.sh --config <file> [--text <request> | --file <path>] [--mode auto|apply|propose] [--interval <seconds>] [--force] [--json]`
 - `start-watch.sh --config <file> [--apply] [--auto-apply] [--interval <seconds>]`
 - `stop-watch.sh --config <file>`
@@ -181,6 +182,8 @@
 - 전역 `up`, `dev`처럼 너무 짧은 이름은 셸/도구 충돌 가능성이 커서, 공통 런처는 `workspace` 또는 `ws`를 기본으로 사용합니다.
 - `dispatch`는 proposal/apply 결과를 `DISPATCH_TICKET_ROOT`에 JSON으로 남겨 다음 단계 오케스트레이터가 읽을 수 있게 합니다.
 - triage pane 자체를 직접 파싱하기보다, 요청을 `DISPATCH_INBOX_ROOT`의 markdown/text 파일로 떨어뜨리고 `dispatch-watch`가 그것을 처리하는 방식이 더 안정적입니다.
+- `workspace watch <project>`는 `dispatch-watch`와 함께 `triage-watch` 브리지도 켜서 triage pane의 최신 일반 입력을 `intake`로 넘깁니다.
+- `triage-watch`는 일반 자연어만 대상으로 하며, slash command(`/...`)는 자동 intake 대상으로 삼지 않습니다.
 - 실사용 UX는 `dispatch-task -> enqueue-dispatch -> dispatch-watch` 흐름으로 구성하는 편이 자연스럽습니다.
 - triage에서 일반 자연어 구현 요청을 받으면, 내부적으로는 `workspace intake <project> --text "..."`를 기본 진입점으로 쓰는 것이 가장 단순합니다.
 - `intake`는 짧은 인사, 감사, 일반 질문 같은 non-actionable 대화는 무시하고, 실제 구현/리뷰/정리 요청만 dispatch inbox로 보냅니다.

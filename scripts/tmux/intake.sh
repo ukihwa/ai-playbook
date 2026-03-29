@@ -208,20 +208,6 @@ else
 fi
 
 REQUEST_FILE="$("${CREATE_CMD[@]}")"
-
-WATCH_CMD=("${SCRIPT_DIR}/dispatch-watch.sh" --config "${CONFIG_PATH}" --interval "${INTERVAL_SECONDS}" --once)
-case "${MODE_VALUE}" in
-	auto)
-		WATCH_CMD+=(--auto-apply)
-		;;
-	apply)
-		WATCH_CMD+=(--apply)
-		;;
-	propose)
-		;;
-esac
-
-"${WATCH_CMD[@]}"
 AUDIT_FILE="${INTAKE_AUDIT_ROOT}/$(date +%Y%m%d-%H%M%S)-actionable.json"
 python3 - "${AUDIT_FILE}" "${PRODUCT_NAME}" "${MODE_VALUE}" "${REASON_VALUE}" "${RAW_INPUT}" "${REQUEST_FILE}" <<'PY'
 import json
@@ -241,6 +227,20 @@ payload = {
 }
 path.write_text(json.dumps(payload, ensure_ascii=False))
 PY
+
+WATCH_CMD=("${SCRIPT_DIR}/dispatch-watch.sh" --config "${CONFIG_PATH}" --interval "${INTERVAL_SECONDS}" --once)
+case "${MODE_VALUE}" in
+	auto)
+		WATCH_CMD+=(--auto-apply)
+		;;
+	apply)
+		WATCH_CMD+=(--apply)
+		;;
+	propose)
+		;;
+esac
+
+"${WATCH_CMD[@]}"
 if [[ "${JSON_OUTPUT}" == "true" ]]; then
 	python3 - "${REQUEST_FILE}" "${MODE_VALUE}" <<'PY'
 import json, sys

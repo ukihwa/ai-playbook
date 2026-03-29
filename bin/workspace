@@ -113,6 +113,7 @@ for script in \
 	"${TMUX_DIR}/intake.sh" \
 	"${TMUX_DIR}/start-watch.sh" \
 	"${TMUX_DIR}/stop-watch.sh" \
+	"${TMUX_DIR}/triage-bridge.sh" \
 	"${TMUX_DIR}/archive-ticket.sh" \
 	"${TMUX_DIR}/archive-completed.sh" \
 	"${ROOT_DIR}/scripts/setup/init-project.sh" \
