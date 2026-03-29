@@ -156,7 +156,7 @@ wait_for_ports() {
 		for port in "${ports[@]}"; do
 			port="${port//[[:space:]]/}"
 			[[ -n "${port}" ]] || continue
-			if ! (echo >"/dev/tcp/127.0.0.1/${port}") >/dev/null 2>&1; then
+			if ! lsof -nP -iTCP:"${port}" -sTCP:LISTEN >/dev/null 2>&1; then
 				all_ready="false"
 				break
 			fi
