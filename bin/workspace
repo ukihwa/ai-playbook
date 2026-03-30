@@ -34,6 +34,7 @@ Commands:
   report <project>                Summarize dispatch ticket state
   daily-report <project>          Draft one-line daily report items from tickets
   finish-task <project> <id>      Mark, archive, and clean up a completed task
+  repair-tasks <project>          Find shell-only stuck task windows and repair them
   apply-ticket <project> <id>     Execute a proposed dispatch ticket
   approve-ticket <project> <id>   Approve a needs-triage ticket and execute it
   reject-ticket <project> <id>    Reject a needs-triage ticket
@@ -106,6 +107,7 @@ for script in \
 	"${TMUX_DIR}/report.sh" \
 	"${TMUX_DIR}/daily-report.sh" \
 	"${TMUX_DIR}/finish-task.sh" \
+	"${TMUX_DIR}/repair-tasks.sh" \
 	"${TMUX_DIR}/apply-ticket.sh" \
 	"${TMUX_DIR}/approve-ticket.sh" \
 	"${TMUX_DIR}/reject-ticket.sh" \
@@ -229,6 +231,9 @@ case "${COMMAND}" in
 		;;
 	finish-task)
 		exec "${TMUX_DIR}/finish-task.sh" --config "${CONFIG_FILE}" "$@"
+		;;
+	repair-tasks)
+		exec "${TMUX_DIR}/repair-tasks.sh" --config "${CONFIG_FILE}" "$@"
 		;;
 	apply-ticket)
 		exec "${TMUX_DIR}/apply-ticket.sh" --config "${CONFIG_FILE}" "$@"
