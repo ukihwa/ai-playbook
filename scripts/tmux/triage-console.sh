@@ -250,6 +250,7 @@ if note:
     print(f"note: {note}")
 PY
 			fi
+			show_status_brief
 			restore_triage_focus
 			continue
 			;;
