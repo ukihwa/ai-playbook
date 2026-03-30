@@ -48,7 +48,7 @@ json_output = sys.argv[2] == "true"
 latest_limit = int(sys.argv[3])
 include_proposed = sys.argv[4] == "true"
 
-allowed = {"applied-task", "applied-review", "done", "blocked"}
+allowed = {"applied-task", "applied-review", "done-awaiting-review", "done", "blocked"}
 if include_proposed:
     allowed.add("proposed")
 
@@ -56,6 +56,7 @@ status_label = {
     "proposed": "대기",
     "applied-task": "진행중",
     "applied-review": "검토중",
+    "done-awaiting-review": "검토대기",
     "done": "완료",
     "blocked": "진행중",
     "canceled": "취소",

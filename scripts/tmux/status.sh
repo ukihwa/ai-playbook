@@ -51,7 +51,7 @@ from pathlib import Path
 
 root = Path(sys.argv[1])
 counter = Counter()
-daily_report_allowed = {"applied-task", "applied-review", "done", "blocked"}
+daily_report_allowed = {"applied-task", "applied-review", "done-awaiting-review", "done", "blocked"}
 latest = None
 bootstrap_issue_count = 0
 
@@ -72,7 +72,7 @@ if root.exists():
 
 total = sum(counter.values())
 print(f" - total tickets: {total}")
-for key in ["proposed", "needs-triage", "approved", "approved-task", "approved-review", "applied-task", "applied-review", "done", "blocked", "rejected"]:
+for key in ["proposed", "needs-triage", "approved", "approved-task", "approved-review", "applied-task", "applied-review", "done-awaiting-review", "done", "blocked", "rejected"]:
     if counter.get(key):
         print(f" - {key}: {counter[key]}")
 if bootstrap_issue_count:
@@ -142,7 +142,7 @@ from pathlib import Path
 
 root = Path(sys.argv[1])
 counter = Counter()
-daily_report_allowed = {"applied-task", "applied-review", "done", "blocked"}
+daily_report_allowed = {"applied-task", "applied-review", "done-awaiting-review", "done", "blocked"}
 latest = None
 bootstrap_issue_count = 0
 

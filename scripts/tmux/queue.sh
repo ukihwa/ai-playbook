@@ -76,6 +76,7 @@ active_statuses = {
     "approved-review",
     "applied-task",
     "applied-review",
+    "done-awaiting-review",
 }
 
 items = []

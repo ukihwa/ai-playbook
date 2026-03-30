@@ -17,7 +17,7 @@ TICKET_INPUT=""
 
 usage() {
 	cat <<'EOF'
-usage: finish-task.sh --config <file> [--status <done|blocked|canceled|rejected>] [--note <text>] [--keep-ticket] [--keep-window] [--keep-worktree] [--dry-run] <ticket-file|target/slug|slug>
+usage: finish-task.sh --config <file> [--status <done|done-awaiting-review|blocked|canceled|rejected>] [--note <text>] [--keep-ticket] [--keep-window] [--keep-worktree] [--dry-run] <ticket-file|target/slug|slug>
 EOF
 }
 
@@ -69,7 +69,7 @@ done
 [[ -n "${TICKET_INPUT}" ]] || die "missing ticket identifier"
 
 case "${STATUS_VALUE}" in
-	done|blocked|canceled|rejected)
+	done|done-awaiting-review|blocked|canceled|rejected)
 		;;
 	*)
 		die "unsupported finish status '${STATUS_VALUE}'"

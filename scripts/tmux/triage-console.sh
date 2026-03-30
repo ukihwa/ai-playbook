@@ -126,6 +126,7 @@ print(
     "tickets: "
     f"needs-triage={counts.get('needs-triage', 0)}, "
     f"applied-task={counts.get('applied-task', 0)}, "
+    f"awaiting-review={counts.get('done-awaiting-review', 0)}, "
     f"proposed={counts.get('proposed', 0)}, "
     f"bootstrap-failures={dispatch.get('bootstrap_failures', 0)}"
 )

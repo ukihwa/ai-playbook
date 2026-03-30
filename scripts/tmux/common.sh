@@ -48,6 +48,7 @@ load_config() {
 	DISPATCH_ARCHIVE_ROOT="${DISPATCH_ARCHIVE_ROOT:-${TRIAGE_DIR}/.dispatch-tickets-archive}"
 	DISPATCH_INBOX_ROOT="${DISPATCH_INBOX_ROOT:-${TRIAGE_DIR}/docs/tasks/dispatch-inbox}"
 	INTAKE_AUDIT_ROOT="${INTAKE_AUDIT_ROOT:-${TRIAGE_DIR}/.intake-audit}"
+	AUTO_FINISH_EXEC_TASKS="${AUTO_FINISH_EXEC_TASKS:-false}"
 	AGENT_CLAUDE_CMD="${AGENT_CLAUDE_CMD:-claude}"
 	AGENT_CODEX_CMD="${AGENT_CODEX_CMD:-codex}"
 	AGENT_GEMINI_CMD="${AGENT_GEMINI_CMD:-gemini}"
@@ -362,9 +363,17 @@ run_agent_exec_prompt() {
 	local exec_script=""
 	local mark_script="${SCRIPT_DIR}/mark-ticket.sh"
 	local triage_script="${SCRIPT_DIR}/request-triage.sh"
+	local finish_script="${SCRIPT_DIR}/finish-task.sh"
+	local success_status="done-awaiting-review"
+	local success_note="codex exec ${run_label} completed automatically; awaiting review"
 
 	[[ -f "${prompt_file}" ]] || die "prompt file not found: ${prompt_file}"
 	[[ "${agent_name}" == "codex" ]] || die "exec mode currently supports codex only"
+
+	if [[ "${AUTO_FINISH_EXEC_TASKS}" == "true" ]]; then
+		success_status="done"
+		success_note="codex exec ${run_label} completed automatically"
+	fi
 
 	pane_target="$(tmux_pane_target "${window_name}" "${pane_index}")"
 	agent_cmd="$(resolve_agent_command "${agent_name}")"
@@ -375,7 +384,10 @@ cd $(printf '%q' "${work_dir}") || exit 1
 $(printf '%q' "${agent_cmd}") -a never -s workspace-write exec -C $(printf '%q' "${work_dir}") - < $(printf '%q' "${prompt_file}")
 status=\$?
 if [[ "\$status" -eq 0 ]]; then
-  $(printf '%q' "${mark_script}") --config $(printf '%q' "${config_path}") --status done --note $(printf '%q' "codex exec ${run_label} completed automatically") $(printf '%q' "${ticket_input}") >/dev/null 2>&1 || true
+  $(printf '%q' "${mark_script}") --config $(printf '%q' "${config_path}") --status $(printf '%q' "${success_status}") --note $(printf '%q' "${success_note}") $(printf '%q' "${ticket_input}") >/dev/null 2>&1 || true
+  if [[ $(printf '%q' "${AUTO_FINISH_EXEC_TASKS}") == "true" ]]; then
+    $(printf '%q' "${finish_script}") --config $(printf '%q' "${config_path}") --status done $(printf '%q' "${ticket_input}") >/dev/null 2>&1 || true
+  fi
 else
   $(printf '%q' "${triage_script}") --config $(printf '%q' "${config_path}") --note $(printf '%q' "codex exec ${run_label} exited with status \$status") $(printf '%q' "${ticket_input}") >/dev/null 2>&1 || true
 fi
