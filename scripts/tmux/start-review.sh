@@ -116,7 +116,16 @@ if [[ "${SKIP_HANDOFF}" == "false" ]]; then
 			"${SCRIPT_DIR}/request-triage.sh" --config "${CONFIG_PATH}" \
 				--note "review worker bootstrap failed for ${AGENT_NAME}; pane command=${current_command:-unknown}" \
 				"${TARGET}/${SLUG}" >/dev/null || true
+			if tmux_has_session && tmux_window_exists "${WINDOW_NAME}"; then
+				tmux kill-window -t "$(pane_path "${WINDOW_NAME}")" >/dev/null 2>&1 || true
+			fi
 			echo "warning: review worker bootstrap did not stabilize for ${WINDOW_NAME} (cmd=${current_command:-unknown})" >&2
+			print_header "review blocked"
+			echo "session: ${TMUX_SESSION}"
+			echo "window: ${WINDOW_NAME}"
+			echo "agent: ${AGENT_NAME}"
+			echo "reason: review worker bootstrap failed; escalated to needs-triage"
+			exit 0
 		fi
 	fi
 	"${SCRIPT_DIR}/handoff.sh" --config "${CONFIG_PATH}" --pane "${PANE_INDEX}" --mode "${PROMPT_MODE}" "${WINDOW_NAME}" "${ARTIFACT_FILE}" >/dev/null

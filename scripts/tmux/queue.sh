@@ -133,4 +133,7 @@ for item in items:
     if notes:
         latest = notes[-1]
         print(f"  note: {latest.get('note', '')}")
+        note_text = (latest.get("note", "") or "").lower()
+        if "bootstrap failed" in note_text:
+            print("  bootstrap_issue: worker failed to start automatically")
 PY

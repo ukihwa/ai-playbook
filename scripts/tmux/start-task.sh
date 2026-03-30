@@ -146,7 +146,14 @@ if [[ "${SKIP_HANDOFF}" == "false" ]]; then
 			"${SCRIPT_DIR}/request-triage.sh" --config "${CONFIG_PATH}" \
 				--note "worker bootstrap failed for ${AGENT_NAME}; pane command=${current_command:-unknown}" \
 				"${TARGET}/${SLUG}" >/dev/null || true
+			"${SCRIPT_DIR}/cleanup-task.sh" --config "${CONFIG_PATH}" --delete-worktree "${TARGET}/${SLUG}" >/dev/null 2>&1 || true
 			echo "warning: worker bootstrap did not stabilize for ${WINDOW_NAME} (cmd=${current_command:-unknown})" >&2
+			print_header "task blocked"
+			echo "session: ${TMUX_SESSION}"
+			echo "window: ${WINDOW_NAME}"
+			echo "agent: ${AGENT_NAME}"
+			echo "reason: worker bootstrap failed; escalated to needs-triage"
+			exit 0
 		fi
 	fi
 	"${SCRIPT_DIR}/handoff.sh" --config "${CONFIG_PATH}" --pane "${PANE_INDEX}" --mode "${PROMPT_MODE}" "${WINDOW_NAME}" "${HANDOFF_FILE}" >/dev/null
