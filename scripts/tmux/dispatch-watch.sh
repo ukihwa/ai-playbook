@@ -11,10 +11,11 @@ APPLY="false"
 AUTO_APPLY=""
 INTERVAL_SECONDS="3"
 ONCE="false"
+JSON_OUTPUT="false"
 
 usage() {
 	cat <<'EOF'
-usage: dispatch-watch.sh --config <file> [--apply] [--auto-apply] [--interval <seconds>] [--once]
+usage: dispatch-watch.sh --config <file> [--apply] [--auto-apply] [--interval <seconds>] [--once] [--json]
 
 Watches the configured dispatch inbox directory and runs dispatch for any
 new .md or .txt request files.
@@ -41,6 +42,10 @@ while [[ $# -gt 0 ]]; do
 			;;
 		--once)
 			ONCE="true"
+			shift
+			;;
+		--json)
+			JSON_OUTPUT="true"
 			shift
 			;;
 		-h|--help)
@@ -80,6 +85,9 @@ process_file() {
 	local dispatch_cmd=("${SCRIPT_DIR}/dispatch.sh" --config "${CONFIG_PATH}" --json)
 	local output_file
 	local log_file
+	local result_action="proposed"
+	local result_ticket=""
+	local result_reason=""
 	output_file="$(mktemp)"
 	log_file="$(mktemp)"
 
@@ -88,7 +96,9 @@ process_file() {
 	fi
 
 	mv "${request_file}" "${lock_file}"
-	printf 'processing: %s\n' "${base_name}"
+	if [[ "${JSON_OUTPUT}" != "true" ]]; then
+		printf 'processing: %s\n' "${base_name}"
+	fi
 
 	if "${dispatch_cmd[@]}" "${lock_file}" >"${output_file}" 2>"${log_file}"; then
 		if [[ "${APPLY}" == "true" ]]; then
@@ -99,7 +109,11 @@ data = json.loads(open(sys.argv[1]).read())
 print(f"{data['target']}/{data['slug']}")
 PY
 )"
-			printf 'applying: %s\n' "${ticket_ref}"
+			result_action="applied"
+			result_ticket="${ticket_ref}"
+			if [[ "${JSON_OUTPUT}" != "true" ]]; then
+				printf 'applying: %s\n' "${ticket_ref}"
+			fi
 			"${SCRIPT_DIR}/apply-ticket.sh" --config "${CONFIG_PATH}" "${ticket_ref}" >>"${log_file}" 2>&1
 		elif [[ "${AUTO_APPLY}" == "true" ]]; then
 			local auto_apply_decision=""
@@ -142,7 +156,11 @@ PY
 			if [[ "${auto_apply_decision}" == apply\ * ]]; then
 				local ticket_ref=""
 				ticket_ref="${auto_apply_decision#apply }"
-				printf 'auto-applying: %s\n' "${ticket_ref}"
+				result_action="auto-applied"
+				result_ticket="${ticket_ref}"
+				if [[ "${JSON_OUTPUT}" != "true" ]]; then
+					printf 'auto-applying: %s\n' "${ticket_ref}"
+				fi
 				"${SCRIPT_DIR}/apply-ticket.sh" --config "${CONFIG_PATH}" "${ticket_ref}" >>"${log_file}" 2>&1
 			else
 				local skip_payload=""
@@ -151,19 +169,59 @@ PY
 				skip_payload="${auto_apply_decision#skip }"
 				ticket_ref="${skip_payload%% *}"
 				skip_reason="${skip_payload#* }"
-				printf 'auto-apply skipped: %s\n' "${skip_reason}"
+				result_action="needs-triage"
+				result_ticket="${ticket_ref}"
+				result_reason="${skip_reason}"
+				if [[ "${JSON_OUTPUT}" != "true" ]]; then
+					printf 'auto-apply skipped: %s\n' "${skip_reason}"
+				fi
 				if [[ "${AUTO_APPLY_ESCALATE_ON_SKIP}" == "true" && -n "${ticket_ref}" && -n "${skip_reason}" ]]; then
-					printf 'escalating to triage: %s\n' "${ticket_ref}"
+					if [[ "${JSON_OUTPUT}" != "true" ]]; then
+						printf 'escalating to triage: %s\n' "${ticket_ref}"
+					fi
 					"${SCRIPT_DIR}/request-triage.sh" --config "${CONFIG_PATH}" --note "auto-apply skipped: ${skip_reason}" "${ticket_ref}" >>"${log_file}" 2>&1
 				fi
 			fi
+		else
+			result_ticket="$(python3 - "${output_file}" <<'PY'
+import json, sys
+data = json.loads(open(sys.argv[1]).read())
+print(f"{data['target']}/{data['slug']}")
+PY
+)"
 		fi
 		mv "${lock_file}" "${processed_file}"
-		printf 'processed: %s\n' "${base_name}"
+		if [[ "${JSON_OUTPUT}" == "true" ]]; then
+			python3 - "${base_name}" "${processed_file}" "${result_action}" "${result_ticket}" "${result_reason}" <<'PY'
+import json
+import sys
+print(json.dumps({
+    "file": sys.argv[1],
+    "processed_file": sys.argv[2],
+    "action": sys.argv[3],
+    "ticket": sys.argv[4],
+    "reason": sys.argv[5],
+}, ensure_ascii=False))
+PY
+		else
+			printf 'processed: %s\n' "${base_name}"
+		fi
 	else
 		mv "${lock_file}" "${failed_file}"
-		printf 'failed: %s\n' "${base_name}" >&2
-		cat "${log_file}" >&2 || true
+		if [[ "${JSON_OUTPUT}" == "true" ]]; then
+			python3 - "${base_name}" "${failed_file}" <<'PY'
+import json
+import sys
+print(json.dumps({
+    "file": sys.argv[1],
+    "failed_file": sys.argv[2],
+    "action": "failed",
+}, ensure_ascii=False))
+PY
+		else
+			printf 'failed: %s\n' "${base_name}" >&2
+			cat "${log_file}" >&2 || true
+		fi
 	fi
 
 	rm -f "${output_file}" "${log_file}"
@@ -179,15 +237,19 @@ watch_once() {
 	done < <(find "${DISPATCH_INBOX_ROOT}" -maxdepth 1 -type f \( -name '*.md' -o -name '*.txt' \) | sort)
 
 	if [[ "${found}" != "true" ]]; then
-		printf 'dispatch inbox idle: %s\n' "${DISPATCH_INBOX_ROOT}"
+		if [[ "${JSON_OUTPUT}" != "true" ]]; then
+			printf 'dispatch inbox idle: %s\n' "${DISPATCH_INBOX_ROOT}"
+		fi
 	fi
 }
 
-print_header "dispatch watch"
-echo "inbox: ${DISPATCH_INBOX_ROOT}"
-echo "apply: ${APPLY}"
-echo "auto_apply: ${AUTO_APPLY}"
-echo "interval_seconds: ${INTERVAL_SECONDS}"
+if [[ "${JSON_OUTPUT}" != "true" ]]; then
+	print_header "dispatch watch"
+	echo "inbox: ${DISPATCH_INBOX_ROOT}"
+	echo "apply: ${APPLY}"
+	echo "auto_apply: ${AUTO_APPLY}"
+	echo "interval_seconds: ${INTERVAL_SECONDS}"
+fi
 
 if [[ "${ONCE}" == "true" ]]; then
 	watch_once

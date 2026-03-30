@@ -146,7 +146,24 @@ classification = payload.get("classification", "unknown")
 if classification == "ignore":
     print(f"ignored: {payload.get('reason', 'unknown')}")
 else:
-    print(f"queued: {payload.get('request', '')}")
+    watch = payload.get("watch_result") or {}
+    action = watch.get("action", "queued")
+    ticket = watch.get("ticket", "")
+    reason = watch.get("reason", "")
+    request = payload.get("request", "")
+    if action == "auto-applied":
+        print(f"auto-applied: {ticket or request}")
+    elif action == "applied":
+        print(f"applied: {ticket or request}")
+    elif action == "needs-triage":
+        suffix = f" ({reason})" if reason else ""
+        print(f"needs-triage: {ticket or request}{suffix}")
+    elif action == "proposed":
+        print(f"proposed: {ticket or request}")
+    elif action == "failed":
+        print(f"failed: {request}")
+    else:
+        print(f"queued: {request}")
 PY
 	then
 		echo "error: failed to parse intake result"

@@ -241,25 +241,31 @@ case "${MODE_VALUE}" in
 esac
 
 if [[ "${JSON_OUTPUT}" == "true" ]]; then
-	WATCH_LOG_FILE="$(mktemp)"
-	if ! "${WATCH_CMD[@]}" >"${WATCH_LOG_FILE}" 2>&1; then
-		cat "${WATCH_LOG_FILE}" >&2 || true
-		rm -f "${WATCH_LOG_FILE}"
+	WATCH_RESULT_FILE="$(mktemp)"
+	if ! "${WATCH_CMD[@]}" --json >"${WATCH_RESULT_FILE}" 2>&1; then
+		cat "${WATCH_RESULT_FILE}" >&2 || true
+		rm -f "${WATCH_RESULT_FILE}"
 		exit 1
 	fi
-	rm -f "${WATCH_LOG_FILE}"
 else
 	"${WATCH_CMD[@]}"
 fi
 if [[ "${JSON_OUTPUT}" == "true" ]]; then
-	python3 - "${REQUEST_FILE}" "${MODE_VALUE}" <<'PY'
+	python3 - "${REQUEST_FILE}" "${MODE_VALUE}" "${WATCH_RESULT_FILE}" <<'PY'
 import json, sys
+watch_result = None
+try:
+    watch_result = json.loads(open(sys.argv[3]).read())
+except Exception:
+    watch_result = None
 print(json.dumps({
     "classification": "actionable",
     "mode": sys.argv[2],
     "request": sys.argv[1],
+    "watch_result": watch_result,
 }, ensure_ascii=False))
 PY
+	rm -f "${WATCH_RESULT_FILE}"
 else
 	printf 'classification: actionable\n'
 	printf 'request: %s\n' "${REQUEST_FILE}"
