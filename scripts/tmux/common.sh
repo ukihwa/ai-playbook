@@ -153,6 +153,14 @@ wait_for_pane_command() {
 	return 1
 }
 
+pane_current_command() {
+	local window_name="$1"
+	local pane_index="${2:-0}"
+	local pane_target
+	pane_target="$(tmux_pane_target "${window_name}" "${pane_index}")"
+	tmux display-message -p -t "${pane_target}" '#{pane_current_command}' 2>/dev/null || true
+}
+
 pane_contains_text() {
 	local window_name="$1"
 	local pane_index="$2"
@@ -188,6 +196,31 @@ maybe_accept_codex_trust() {
 	done
 
 	[[ "${accepted}" == "true" ]]
+}
+
+wait_for_agent_ready() {
+	local window_name="$1"
+	local pane_index="$2"
+	local agent_name="$3"
+	local timeout_seconds="${4:-12}"
+	local elapsed=0
+	local current=""
+
+	while (( elapsed < timeout_seconds )); do
+		if [[ "${agent_name}" == "codex" ]]; then
+			maybe_accept_codex_trust "${window_name}" "${pane_index}" 1 || true
+		fi
+
+		current="$(pane_current_command "${window_name}" "${pane_index}")"
+		if [[ "${current}" == "${agent_name}" ]]; then
+			return 0
+		fi
+
+		sleep 1
+		((elapsed += 1))
+	done
+
+	return 1
 }
 
 wait_for_ports() {

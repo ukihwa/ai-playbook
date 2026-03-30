@@ -216,6 +216,7 @@ if [[ "${JSON_OUTPUT}" == "true" ]]; then
 	TARGETS_FILE="${TMP_DIR}/targets.json"
 	TMUX_FILE="${TMP_DIR}/tmux.json"
 	RUNTIME_FILE="${TMP_DIR}/runtime.json"
+	TASK_WORKERS_FILE="${TMP_DIR}/task-workers.json"
 	WORKTREES_FILE="${TMP_DIR}/worktrees.json"
 	DISPATCH_FILE="${TMP_DIR}/dispatch.json"
 	INTAKE_FILE="${TMP_DIR}/intake.json"
@@ -287,6 +288,43 @@ if triage_mode != "console":
 print(json.dumps({"runtimes": entries, "watch": watch, "triage_watch": triage_watch}, ensure_ascii=False))
 PY
 
+	python3 - <<'PY' > "${TASK_WORKERS_FILE}"
+import json, os, subprocess
+
+session = os.environ["TMUX_SESSION"]
+base_windows = {"triage", "fe-run", "be-run", "app-run", "claude-fe", "claude-be", "claude-app", "dispatch-watch", "triage-watch"}
+entries = []
+
+def run(cmd):
+    result = subprocess.run(cmd, text=True, capture_output=True)
+    if result.returncode != 0:
+        raise subprocess.CalledProcessError(result.returncode, cmd, result.stdout, result.stderr)
+    return result.stdout.strip()
+
+try:
+    windows = run(["tmux", "list-windows", "-t", session, "-F", "#{window_name}"])
+except subprocess.CalledProcessError:
+    windows = ""
+
+for name in windows.splitlines():
+    if not name or name in base_windows:
+        continue
+    try:
+        pane_lines = run(["tmux", "list-panes", "-t", f"{session}:{name}", "-F", "#{pane_index}\t#{pane_current_command}\t#{pane_current_path}"])
+    except subprocess.CalledProcessError:
+        continue
+    panes = []
+    for line in pane_lines.splitlines():
+        parts = line.split("\t")
+        if len(parts) != 3:
+            continue
+        panes.append({"pane": int(parts[0]), "command": parts[1] or "unknown", "dir": parts[2] or "unknown"})
+    if panes:
+        entries.append({"window": name, "panes": panes})
+
+print(json.dumps(entries, ensure_ascii=False))
+PY
+
 	if [[ -d "${WORKTREE_ROOT}" ]]; then
 		find "${WORKTREE_ROOT}" -mindepth 2 -maxdepth 2 -type d | sort | python3 - <<'PY' > "${WORKTREES_FILE}"
 import json, sys
@@ -299,7 +337,7 @@ PY
 	write_dispatch_summary_json > "${DISPATCH_FILE}"
 	write_intake_summary_json > "${INTAKE_FILE}"
 
-	python3 - "${TARGETS_FILE}" "${TMUX_FILE}" "${RUNTIME_FILE}" "${WORKTREES_FILE}" "${DISPATCH_FILE}" "${INTAKE_FILE}" <<'PY'
+	python3 - "${TARGETS_FILE}" "${TMUX_FILE}" "${RUNTIME_FILE}" "${TASK_WORKERS_FILE}" "${WORKTREES_FILE}" "${DISPATCH_FILE}" "${INTAKE_FILE}" <<'PY'
 import json
 import os
 import sys
@@ -308,9 +346,10 @@ from pathlib import Path
 targets = json.loads(Path(sys.argv[1]).read_text())
 tmux_windows = [json.loads(line) for line in Path(sys.argv[2]).read_text().splitlines() if line.strip()]
 runtime_info = json.loads(Path(sys.argv[3]).read_text())
-worktrees = json.loads(Path(sys.argv[4]).read_text())
-dispatch_summary = json.loads(Path(sys.argv[5]).read_text())
-intake_summary = json.loads(Path(sys.argv[6]).read_text())
+task_workers = json.loads(Path(sys.argv[4]).read_text())
+worktrees = json.loads(Path(sys.argv[5]).read_text())
+dispatch_summary = json.loads(Path(sys.argv[6]).read_text())
+intake_summary = json.loads(Path(sys.argv[7]).read_text())
 
 payload = {
     "config": {
@@ -322,6 +361,7 @@ payload = {
     "targets": targets,
     "tmux": tmux_windows,
     "runtime": runtime_info,
+    "task_workers": task_workers,
     "worktrees": worktrees,
     "dispatch_summary": dispatch_summary,
     "intake_summary": intake_summary,
@@ -389,6 +429,19 @@ if tmux_has_session; then
 	elif [[ "${TRIAGE_MODE:-console}" != "console" ]]; then
 		echo " - triage-watch | status=stopped"
 	fi
+
+	base_windows_pattern='^(triage|fe-run|be-run|app-run|claude-fe|claude-be|claude-app|dispatch-watch|triage-watch)$'
+	while IFS= read -r window_name; do
+		[[ -n "${window_name}" ]] || continue
+		if [[ "${window_name}" =~ ${base_windows_pattern} ]]; then
+			continue
+		fi
+		echo " - ${window_name}"
+		while IFS=$'\t' read -r pane_index pane_command pane_dir; do
+			[[ -n "${pane_index}" ]] || continue
+			echo "   - pane ${pane_index}: cmd=${pane_command:-unknown} | dir=${pane_dir:-unknown}"
+		done < <(tmux list-panes -t "$(pane_path "${window_name}")" -F '#{pane_index}	#{pane_current_command}	#{pane_current_path}' 2>/dev/null || true)
+	done < <(tmux list-windows -t "${TMUX_SESSION}" -F '#W')
 else
 	echo " - session not created"
 fi

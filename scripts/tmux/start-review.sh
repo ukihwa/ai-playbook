@@ -110,11 +110,14 @@ if [[ "${SKIP_HANDOFF}" == "false" ]]; then
 	fi
 
 	"${HELPER_DIR}/create-review-artifact.sh" "${create_args[@]}" >/dev/null
-	if [[ "${AGENT_NAME:-}" == "codex" ]]; then
-		maybe_accept_codex_trust "${WINDOW_NAME}" "${PANE_INDEX}" 12 || true
-	fi
-	if [[ -n "${AGENT_NAME}" && "${PROMPT_MODE}" == "prompt" ]]; then
-		wait_for_pane_command "${WINDOW_NAME}" "${PANE_INDEX}" "${AGENT_NAME}" 8 || true
+	if [[ -n "${AGENT_NAME}" ]]; then
+		if ! wait_for_agent_ready "${WINDOW_NAME}" "${PANE_INDEX}" "${AGENT_NAME}" 14; then
+			current_command="$(pane_current_command "${WINDOW_NAME}" "${PANE_INDEX}")"
+			"${SCRIPT_DIR}/request-triage.sh" --config "${CONFIG_PATH}" \
+				--note "review worker bootstrap failed for ${AGENT_NAME}; pane command=${current_command:-unknown}" \
+				"${TARGET}/${SLUG}" >/dev/null || true
+			echo "warning: review worker bootstrap did not stabilize for ${WINDOW_NAME} (cmd=${current_command:-unknown})" >&2
+		fi
 	fi
 	"${SCRIPT_DIR}/handoff.sh" --config "${CONFIG_PATH}" --pane "${PANE_INDEX}" --mode "${PROMPT_MODE}" "${WINDOW_NAME}" "${ARTIFACT_FILE}" >/dev/null
 fi
