@@ -79,36 +79,10 @@ restore_triage_focus() {
 	fi
 }
 
-echo "== triage console =="
-echo "project: ${PRODUCT_NAME}"
-echo "mode: ${MODE_VALUE}"
-echo "plain text -> intake"
-echo "commands: /status, /status-brief, /queue, /queue-latest, /queue-needs, /queue-needs-latest, /daily-report, /repair, /repair-apply, /approve <ticket>, /reject <ticket> [note], /finish <ticket>, /exit"
-echo
-
-while true; do
-	printf 'triage> '
-	if ! IFS= read -r line; then
-		exit 0
-	fi
-
-	line="${line#"${line%%[![:space:]]*}"}"
-	line="${line%"${line##*[![:space:]]}"}"
-	[[ -n "${line}" ]] || continue
-
-	case "${line}" in
-		/exit|/quit)
-			echo "bye"
-			exit 0
-			;;
-		/status)
-			run_helper "status" "${SCRIPT_DIR}/status.sh" --config "${CONFIG_PATH}" || true
-			restore_triage_focus
-			continue
-			;;
-		/status-brief)
-			if output="$(run_helper_capture "status-brief" "${SCRIPT_DIR}/status.sh" --config "${CONFIG_PATH}" --json)"; then
-				python3 - "${output}" <<'PY'
+show_status_brief() {
+	local output=""
+	if output="$(run_helper_capture "status-brief" "${SCRIPT_DIR}/status.sh" --config "${CONFIG_PATH}" --json)"; then
+		python3 - "${output}" <<'PY'
 import json
 import sys
 
@@ -180,7 +154,38 @@ if counts.get("needs-triage", 0) > 0:
 if dispatch.get("bootstrap_failures", 0) > 0:
     print("hint: bootstrap failures present -> /queue-needs-latest")
 PY
-			fi
+	fi
+}
+
+echo "== triage console =="
+echo "project: ${PRODUCT_NAME}"
+echo "mode: ${MODE_VALUE}"
+echo "plain text -> intake"
+echo "commands: /status, /status-brief, /queue, /queue-latest, /queue-needs, /queue-needs-latest, /daily-report, /repair, /repair-apply, /approve <ticket>, /reject <ticket> [note], /finish <ticket>, /exit"
+echo
+
+while true; do
+	printf 'triage> '
+	if ! IFS= read -r line; then
+		exit 0
+	fi
+
+	line="${line#"${line%%[![:space:]]*}"}"
+	line="${line%"${line##*[![:space:]]}"}"
+	[[ -n "${line}" ]] || continue
+
+	case "${line}" in
+		/exit|/quit)
+			echo "bye"
+			exit 0
+			;;
+		/status)
+			run_helper "status" "${SCRIPT_DIR}/status.sh" --config "${CONFIG_PATH}" || true
+			restore_triage_focus
+			continue
+			;;
+		/status-brief)
+			show_status_brief
 			restore_triage_focus
 			continue
 			;;
@@ -216,6 +221,7 @@ PY
 			;;
 		/repair-apply)
 			run_helper "repair-tasks-apply" "${SCRIPT_DIR}/repair-tasks.sh" --config "${CONFIG_PATH}" --apply || true
+			show_status_brief
 			restore_triage_focus
 			continue
 			;;
@@ -294,6 +300,7 @@ print(
 )
 PY
 			fi
+			show_status_brief
 			restore_triage_focus
 			continue
 			;;
