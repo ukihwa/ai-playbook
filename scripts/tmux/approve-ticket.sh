@@ -90,8 +90,33 @@ subprocess.run(
 )
 PY
 
+load_config "${CONFIG_PATH}"
+FINAL_TICKET_FILE="$(resolve_ticket_file "${TICKET_INPUT}")"
+FINAL_STATE="$(
+	python3 - "${FINAL_TICKET_FILE}" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+data = json.loads(Path(sys.argv[1]).read_text())
+notes = data.get("notes", [])
+latest_note = notes[-1].get("note", "") if notes else ""
+print("\t".join([
+    data.get("status", "unknown"),
+    data.get("target", "?"),
+    data.get("slug", "?"),
+    latest_note,
+]))
+PY
+)"
+
+IFS=$'\t' read -r FINAL_STATUS FINAL_TARGET FINAL_SLUG FINAL_NOTE <<< "${FINAL_STATE}"
+
 print_header "ticket approval submitted"
 echo "ticket: ${TICKET_INPUT}"
 echo "agent: ${AGENT_NAME}"
 echo "mode: ${MODE}"
-echo "next: apply-ticket --approved"
+echo "result: ${FINAL_STATUS} (${FINAL_TARGET}/${FINAL_SLUG})"
+if [[ -n "${FINAL_NOTE}" ]]; then
+	echo "note: ${FINAL_NOTE}"
+fi
