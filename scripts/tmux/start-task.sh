@@ -172,7 +172,7 @@ if [[ "${SKIP_HANDOFF}" == "false" ]]; then
 		fi
 	fi
 	if [[ "${PROMPT_MODE}" == "exec" ]]; then
-		run_agent_exec_prompt "${WINDOW_NAME}" "${PANE_INDEX}" "${AGENT_NAME}" "${WORKTREE_DIR}" "${HANDOFF_FILE}"
+		run_agent_exec_prompt "${WINDOW_NAME}" "${PANE_INDEX}" "${AGENT_NAME}" "${WORKTREE_DIR}" "${HANDOFF_FILE}" "${CONFIG_PATH}" "${TARGET}/${SLUG}" "task"
 	else
 		"${SCRIPT_DIR}/handoff.sh" --config "${CONFIG_PATH}" --pane "${PANE_INDEX}" --mode "${PROMPT_MODE}" "${WINDOW_NAME}" "${HANDOFF_FILE}" >/dev/null
 	fi

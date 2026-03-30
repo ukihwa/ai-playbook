@@ -11,7 +11,7 @@ INPUT_TEXT=""
 INPUT_FILE=""
 APPLY="false"
 AGENT_NAME="codex"
-MODE="prompt"
+MODE=""
 TARGET_OVERRIDE=""
 SLUG_OVERRIDE=""
 TITLE_OVERRIDE=""
@@ -242,6 +242,14 @@ TITLE_VALUE="${TITLE_OVERRIDE:-Dispatch: ${TARGET_NAME}/${SLUG_VALUE}}"
 REVIEW_ONLY="false"
 if infer_review_only "${INPUT_SUMMARY}"; then
 	REVIEW_ONLY="true"
+fi
+
+if [[ -z "${MODE}" ]]; then
+	if [[ "${REVIEW_ONLY}" == "true" ]]; then
+		MODE="${REVIEW_AGENT_MODE:-prompt}"
+	else
+		MODE="${TASK_AGENT_MODE:-prompt}"
+	fi
 fi
 
 CROSS_VERIFY="false"

@@ -354,9 +354,14 @@ run_agent_exec_prompt() {
 	local agent_name="$3"
 	local work_dir="$4"
 	local prompt_file="$5"
+	local config_path="$6"
+	local ticket_input="$7"
+	local run_label="${8:-task}"
 	local pane_target=""
 	local agent_cmd=""
 	local exec_script=""
+	local mark_script="${SCRIPT_DIR}/mark-ticket.sh"
+	local triage_script="${SCRIPT_DIR}/request-triage.sh"
 
 	[[ -f "${prompt_file}" ]] || die "prompt file not found: ${prompt_file}"
 	[[ "${agent_name}" == "codex" ]] || die "exec mode currently supports codex only"
@@ -369,6 +374,11 @@ run_agent_exec_prompt() {
 cd $(printf '%q' "${work_dir}") || exit 1
 $(printf '%q' "${agent_cmd}") -a never -s workspace-write exec -C $(printf '%q' "${work_dir}") - < $(printf '%q' "${prompt_file}")
 status=\$?
+if [[ "\$status" -eq 0 ]]; then
+  $(printf '%q' "${mark_script}") --config $(printf '%q' "${config_path}") --status done --note $(printf '%q' "codex exec ${run_label} completed automatically") $(printf '%q' "${ticket_input}") >/dev/null 2>&1 || true
+else
+  $(printf '%q' "${triage_script}") --config $(printf '%q' "${config_path}") --note $(printf '%q' "codex exec ${run_label} exited with status \$status") $(printf '%q' "${ticket_input}") >/dev/null 2>&1 || true
+fi
 printf '\n== agent exit ==\nstatus: %s\n' "\$status"
 rm -f $(printf '%q' "${exec_script}")
 exec zsh
