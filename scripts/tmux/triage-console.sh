@@ -83,7 +83,7 @@ echo "== triage console =="
 echo "project: ${PRODUCT_NAME}"
 echo "mode: ${MODE_VALUE}"
 echo "plain text -> intake"
-echo "commands: /status, /queue, /queue-needs, /queue-needs-latest, /daily-report, /repair, /repair-apply, /approve <ticket>, /reject <ticket> [note], /finish <ticket>, /exit"
+echo "commands: /status, /status-brief, /queue, /queue-latest, /queue-needs, /queue-needs-latest, /daily-report, /repair, /repair-apply, /approve <ticket>, /reject <ticket> [note], /finish <ticket>, /exit"
 echo
 
 while true; do
@@ -106,8 +106,85 @@ while true; do
 			restore_triage_focus
 			continue
 			;;
+		/status-brief)
+			if output="$(run_helper_capture "status-brief" "${SCRIPT_DIR}/status.sh" --config "${CONFIG_PATH}" --json)"; then
+				python3 - "${output}" <<'PY'
+import json
+import sys
+
+payload = json.loads(sys.argv[1])
+runtime = payload.get("runtime", [])
+dispatch = payload.get("dispatch_summary", {})
+intake = payload.get("intake_summary", {})
+task_workers = payload.get("task_workers", [])
+
+ready = 0
+down = 0
+watchers = []
+for entry in runtime:
+    if entry.get("name", "").endswith("-watch"):
+        watchers.append(f"{entry.get('name')}={entry.get('status', 'unknown')}")
+        continue
+    for port in entry.get("ports", []):
+        if port.get("status") == "ready":
+            ready += 1
+        else:
+            down += 1
+
+stuck = 0
+live = 0
+for worker in task_workers:
+    pane0 = worker.get("pane_0_command", "")
+    if pane0 in {"zsh", "bash", "sh"}:
+        stuck += 1
+    elif pane0:
+        live += 1
+
+counts = dispatch.get("counts", {})
+latest_ticket = dispatch.get("latest_ticket") or {}
+latest_intake = intake.get("latest_intake") or {}
+
+print("== status brief ==")
+print(f"runtime: ready_ports={ready}, down_ports={down}")
+if watchers:
+    print("watchers: " + ", ".join(watchers))
+print(
+    "tickets: "
+    f"needs-triage={counts.get('needs-triage', 0)}, "
+    f"applied-task={counts.get('applied-task', 0)}, "
+    f"proposed={counts.get('proposed', 0)}, "
+    f"bootstrap-failures={dispatch.get('bootstrap_failures', 0)}"
+)
+print(f"workers: live={live}, stuck={stuck}")
+print(
+    "intake: "
+    f"actionable={intake.get('counts', {}).get('actionable', 0)}, "
+    f"ignore={intake.get('counts', {}).get('ignore', 0)}"
+)
+if latest_ticket:
+    print(
+        "latest-ticket: "
+        f"[{latest_ticket.get('status', 'unknown')}] "
+        f"{latest_ticket.get('target', '?')}/{latest_ticket.get('slug', '?')}"
+    )
+if latest_intake:
+    print(
+        "latest-intake: "
+        f"[{latest_intake.get('classification', 'unknown')}] "
+        f"{latest_intake.get('reason', '')}"
+    )
+PY
+			fi
+			restore_triage_focus
+			continue
+			;;
 		/queue)
 			run_helper "queue" "${SCRIPT_DIR}/queue.sh" --config "${CONFIG_PATH}" || true
+			restore_triage_focus
+			continue
+			;;
+		/queue-latest)
+			run_helper "queue-latest" "${SCRIPT_DIR}/queue.sh" --config "${CONFIG_PATH}" --latest 5 || true
 			restore_triage_focus
 			continue
 			;;
