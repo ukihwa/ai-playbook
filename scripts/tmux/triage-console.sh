@@ -355,7 +355,7 @@ PY
 	fi
 	echo "${outcome}"
 	case "${outcome}" in
-		auto-applied:*|applied:*|needs-triage:*|proposed:*|failed:*)
+		auto-applied:*|needs-triage:*|failed:*)
 			show_status_brief
 			;;
 	esac
