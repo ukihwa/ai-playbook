@@ -266,6 +266,7 @@ PY
 			else
 				run_helper "reject-ticket" "${SCRIPT_DIR}/reject-ticket.sh" --config "${CONFIG_PATH}" "${ticket}" || true
 			fi
+			show_status_brief
 			restore_triage_focus
 			continue
 			;;
