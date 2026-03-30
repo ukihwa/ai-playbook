@@ -70,7 +70,7 @@ echo "== triage console =="
 echo "project: ${PRODUCT_NAME}"
 echo "mode: ${MODE_VALUE}"
 echo "plain text -> intake"
-echo "commands: /status, /queue, /queue-needs, /queue-needs-latest, /repair, /repair-apply, /approve <ticket>, /reject <ticket> [note], /finish <ticket>, /exit"
+echo "commands: /status, /queue, /queue-needs, /queue-needs-latest, /daily-report, /repair, /repair-apply, /approve <ticket>, /reject <ticket> [note], /finish <ticket>, /exit"
 echo
 
 while true; do
@@ -105,6 +105,11 @@ while true; do
 			;;
 		/queue-needs-latest)
 			run_helper "queue-needs-latest" "${SCRIPT_DIR}/queue.sh" --config "${CONFIG_PATH}" --status needs-triage --latest 5 || true
+			restore_triage_focus
+			continue
+			;;
+		/daily-report)
+			run_helper "daily-report" "${SCRIPT_DIR}/daily-report.sh" --config "${CONFIG_PATH}" || true
 			restore_triage_focus
 			continue
 			;;
