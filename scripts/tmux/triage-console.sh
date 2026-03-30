@@ -59,6 +59,19 @@ run_helper() {
 	return 0
 }
 
+run_helper_capture() {
+	local description="$1"
+	shift
+	local output=""
+	if ! output="$("$@" 2>&1)"; then
+		echo "error: ${description} failed"
+		echo "${output}"
+		return 1
+	fi
+	printf '%s' "${output}"
+	return 0
+}
+
 restore_triage_focus() {
 	if tmux_has_session && tmux_window_exists "triage"; then
 		tmux select-window -t "$(pane_path "triage")" >/dev/null 2>&1 || true
@@ -125,7 +138,29 @@ while true; do
 			;;
 		/approve\ *)
 			ticket="${line#"/approve "}"
-			run_helper "approve-ticket" "${SCRIPT_DIR}/approve-ticket.sh" --config "${CONFIG_PATH}" "${ticket}" || true
+			if output="$(run_helper_capture "approve-ticket" "${SCRIPT_DIR}/approve-ticket.sh" --config "${CONFIG_PATH}" "${ticket}")"; then
+				python3 - "${ticket}" "${output}" <<'PY'
+import sys
+
+ticket = sys.argv[1]
+output = sys.argv[2]
+result = ""
+note = ""
+for raw_line in output.splitlines():
+    line = raw_line.strip()
+    if line.startswith("result: "):
+        result = line[len("result: "):]
+    elif line.startswith("note: "):
+        note = line[len("note: "):]
+
+if result:
+    print(f"approved: {ticket} -> {result}")
+else:
+    print(f"approved: {ticket}")
+if note:
+    print(f"note: {note}")
+PY
+			fi
 			restore_triage_focus
 			continue
 			;;
@@ -146,7 +181,36 @@ while true; do
 			;;
 		/finish\ *)
 			ticket="${line#"/finish "}"
-			run_helper "finish-task" "${SCRIPT_DIR}/finish-task.sh" --config "${CONFIG_PATH}" "${ticket}" || true
+			if output="$(run_helper_capture "finish-task" "${SCRIPT_DIR}/finish-task.sh" --config "${CONFIG_PATH}" "${ticket}")"; then
+				python3 - "${ticket}" "${output}" <<'PY'
+import sys
+
+ticket = sys.argv[1]
+output = sys.argv[2]
+status = ""
+archived = ""
+cleaned_window = ""
+deleted_worktree = ""
+for raw_line in output.splitlines():
+    line = raw_line.strip()
+    if line.startswith("status: "):
+        status = line[len("status: "):]
+    elif line.startswith("archived: "):
+        archived = line[len("archived: "):]
+    elif line.startswith("cleaned_window: "):
+        cleaned_window = line[len("cleaned_window: "):]
+    elif line.startswith("deleted_worktree: "):
+        deleted_worktree = line[len("deleted_worktree: "):]
+
+print(
+    f"finished: {ticket}"
+    + (f" -> {status}" if status else "")
+    + (f" | archived={archived}" if archived else "")
+    + (f" | window={cleaned_window}" if cleaned_window else "")
+    + (f" | worktree={deleted_worktree}" if deleted_worktree else "")
+)
+PY
+			fi
 			restore_triage_focus
 			continue
 			;;
