@@ -67,6 +67,7 @@ fi
 
 PANE_TARGET="$(tmux_pane_target "${WINDOW_NAME}" "${PANE_INDEX}")"
 MESSAGE_FILE="$(mktemp)"
+CURRENT_COMMAND="$(pane_current_command "${WINDOW_NAME}" "${PANE_INDEX}")"
 
 if [[ "${MODE}" == "shell" ]]; then
 	{
@@ -105,6 +106,12 @@ if [[ "${INTERRUPT}" == "true" ]]; then
 fi
 tmux paste-buffer -t "${PANE_TARGET}" -b ai-playbook-handoff
 tmux send-keys -t "${PANE_TARGET}" C-m
+if [[ "${MODE}" == "prompt" && "${CURRENT_COMMAND}" == "codex" ]]; then
+	sleep 1
+	if pane_contains_text "${WINDOW_NAME}" "${PANE_INDEX}" "[Pasted Content"; then
+		tmux send-keys -t "${PANE_TARGET}" C-m
+	fi
+fi
 tmux delete-buffer -b ai-playbook-handoff >/dev/null 2>&1 || true
 rm -f "${MESSAGE_FILE}"
 

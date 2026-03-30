@@ -8,7 +8,7 @@ source "${SCRIPT_DIR}/common.sh"
 
 CONFIG_PATH=""
 AGENT_NAME="codex"
-MODE="prompt"
+MODE=""
 PANE_INDEX="0"
 TICKET_INPUT=""
 PRESERVE_APPROVED="false"
@@ -50,6 +50,8 @@ done
 
 load_config "${CONFIG_PATH}"
 mkdir -p "${DISPATCH_TICKET_ROOT}"
+DEFAULT_TASK_AGENT_MODE="${TASK_AGENT_MODE:-prompt}"
+DEFAULT_REVIEW_AGENT_MODE="${REVIEW_AGENT_MODE:-prompt}"
 
 resolve_ticket_file() {
 	local input="$1"
@@ -96,7 +98,7 @@ resolve_ticket_file() {
 
 TICKET_FILE="$(resolve_ticket_file "${TICKET_INPUT}")"
 
-python3 - "${TICKET_FILE}" "${SCRIPT_DIR}" "${CONFIG_PATH}" "${AGENT_NAME}" "${MODE}" "${PANE_INDEX}" "${PRESERVE_APPROVED}" <<'PY'
+python3 - "${TICKET_FILE}" "${SCRIPT_DIR}" "${CONFIG_PATH}" "${AGENT_NAME}" "${MODE}" "${PANE_INDEX}" "${PRESERVE_APPROVED}" "${DEFAULT_TASK_AGENT_MODE}" "${DEFAULT_REVIEW_AGENT_MODE}" <<'PY'
 import json
 import shlex
 import subprocess
@@ -110,6 +112,8 @@ agent_name = sys.argv[4]
 mode = sys.argv[5]
 pane_index = sys.argv[6]
 preserve_approved = sys.argv[7].lower() == "true"
+default_task_mode = sys.argv[8]
+default_review_mode = sys.argv[9]
 
 data = json.loads(ticket_path.read_text())
 
@@ -123,6 +127,9 @@ in_scope = data.get("in_scope", [])
 out_of_scope = data.get("out_of_scope", [])
 done_criteria = data.get("done_criteria", [])
 review_only = bool(data.get("review_only"))
+
+if not mode:
+    mode = default_review_mode if review_only else default_task_mode
 
 def run(cmd):
     subprocess.run(cmd, check=True)

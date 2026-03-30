@@ -66,7 +66,7 @@ while [[ $# -gt 0 ]]; do
 	esac
 done
 
-[[ $# -eq 2 ]] || die "usage: start-review.sh --config <file> [--agent <claude|codex|gemini>] [--mode shell|prompt] [--artifact-file <path>] [--branch <name>] [--reference <path>] [--review-focus <text>] <target> <slug>"
+[[ $# -eq 2 ]] || die "usage: start-review.sh --config <file> [--agent <claude|codex|gemini>] [--mode shell|prompt|exec] [--artifact-file <path>] [--branch <name>] [--reference <path>] [--review-focus <text>] <target> <slug>"
 
 TARGET="$1"
 SLUG="$2"
@@ -76,9 +76,10 @@ need_cmd tmux
 load_config "${CONFIG_PATH}"
 
 WINDOW_NAME="review-${TARGET}-${SLUG}"
+WORKTREE_DIR="$(target_worktree_dir "${TARGET}" "${SLUG}")"
 
 review_task_args=(--config "${CONFIG_PATH}" --pane "${PANE_INDEX}")
-if [[ -n "${AGENT_NAME}" ]]; then
+if [[ -n "${AGENT_NAME}" && "${PROMPT_MODE}" != "exec" ]]; then
 	review_task_args+=(--agent "${AGENT_NAME}")
 fi
 review_task_args+=("${TARGET}" "${SLUG}")
@@ -110,7 +111,7 @@ if [[ "${SKIP_HANDOFF}" == "false" ]]; then
 	fi
 
 	"${HELPER_DIR}/create-review-artifact.sh" "${create_args[@]}" >/dev/null
-	if [[ -n "${AGENT_NAME}" ]]; then
+	if [[ -n "${AGENT_NAME}" && "${PROMPT_MODE}" != "exec" ]]; then
 		if ! wait_for_agent_ready "${WINDOW_NAME}" "${PANE_INDEX}" "${AGENT_NAME}" 14; then
 			current_command="$(pane_current_command "${WINDOW_NAME}" "${PANE_INDEX}")"
 			"${SCRIPT_DIR}/request-triage.sh" --config "${CONFIG_PATH}" \
@@ -127,8 +128,26 @@ if [[ "${SKIP_HANDOFF}" == "false" ]]; then
 			echo "reason: review worker bootstrap failed; escalated to needs-triage"
 			exit 0
 		fi
+		if ! wait_for_agent_prompt_ready "${WINDOW_NAME}" "${PANE_INDEX}" "${AGENT_NAME}" 20; then
+			current_command="$(pane_current_command "${WINDOW_NAME}" "${PANE_INDEX}")"
+			"${SCRIPT_DIR}/request-triage.sh" --config "${CONFIG_PATH}" \
+				--note "review worker prompt did not become ready for ${AGENT_NAME}; pane command=${current_command:-unknown}" \
+				"${TARGET}/${SLUG}" >/dev/null || true
+			tmux kill-window -t "$(pane_path "${WINDOW_NAME}")" >/dev/null 2>&1 || true
+			echo "warning: review worker prompt did not become ready for ${WINDOW_NAME} (cmd=${current_command:-unknown})" >&2
+			print_header "review blocked"
+			echo "session: ${TMUX_SESSION}"
+			echo "window: ${WINDOW_NAME}"
+			echo "agent: ${AGENT_NAME}"
+			echo "reason: review worker prompt not ready; escalated to needs-triage"
+			exit 0
+		fi
 	fi
-	"${SCRIPT_DIR}/handoff.sh" --config "${CONFIG_PATH}" --pane "${PANE_INDEX}" --mode "${PROMPT_MODE}" "${WINDOW_NAME}" "${ARTIFACT_FILE}" >/dev/null
+	if [[ "${PROMPT_MODE}" == "exec" ]]; then
+		run_agent_exec_prompt "${WINDOW_NAME}" "${PANE_INDEX}" "${AGENT_NAME}" "${WORKTREE_DIR}" "${ARTIFACT_FILE}"
+	else
+		"${SCRIPT_DIR}/handoff.sh" --config "${CONFIG_PATH}" --pane "${PANE_INDEX}" --mode "${PROMPT_MODE}" "${WINDOW_NAME}" "${ARTIFACT_FILE}" >/dev/null
+	fi
 fi
 
 print_header "review started"

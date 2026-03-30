@@ -42,6 +42,14 @@ done
 load_config "${CONFIG_PATH}"
 need_cmd tmux
 
+is_exec_worker_pane() {
+	local window_name="$1"
+	local pane_index="${2:-0}"
+	pane_contains_text "${window_name}" "${pane_index}" "OpenAI Codex v" \
+		|| pane_contains_text "${window_name}" "${pane_index}" "session id:" \
+		|| pane_contains_text "${window_name}" "${pane_index}" "approval: never"
+}
+
 print_header "repair tasks"
 echo "session: ${TMUX_SESSION}"
 echo "apply: ${APPLY}"
@@ -62,6 +70,9 @@ while IFS= read -r window_name; do
 
 	pane_zero_command="$(pane_current_command "${window_name}" 0)"
 	if [[ "${pane_zero_command}" != "zsh" && "${pane_zero_command}" != "bash" && "${pane_zero_command}" != "sh" ]]; then
+		continue
+	fi
+	if is_exec_worker_pane "${window_name}" 0; then
 		continue
 	fi
 

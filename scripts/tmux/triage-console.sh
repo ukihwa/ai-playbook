@@ -108,7 +108,7 @@ for entry in runtime:
 stuck = 0
 live = 0
 for worker in task_workers:
-    pane0 = worker.get("pane_0_command", "")
+    pane0 = worker.get("pane_0_mode") or worker.get("pane_0_command", "")
     if pane0 in {"zsh", "bash", "sh"}:
         stuck += 1
     elif pane0:

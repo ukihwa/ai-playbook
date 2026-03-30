@@ -223,6 +223,41 @@ wait_for_agent_ready() {
 	return 1
 }
 
+wait_for_agent_prompt_ready() {
+	local window_name="$1"
+	local pane_index="$2"
+	local agent_name="$3"
+	local timeout_seconds="${4:-20}"
+	local elapsed=0
+
+	case "${agent_name}" in
+		codex)
+			while (( elapsed < timeout_seconds )); do
+				if pane_contains_text "${window_name}" "${pane_index}" "gpt-5.4 medium" \
+					|| pane_contains_text "${window_name}" "${pane_index}" "100% left" \
+					|| pane_contains_text "${window_name}" "${pane_index}" "Tip:" \
+					|| pane_contains_text "${window_name}" "${pane_index}" "Use /skills"; then
+					if ! pane_contains_text "${window_name}" "${pane_index}" "model:     loading"; then
+						return 0
+					fi
+				fi
+				if (( elapsed >= 6 )) && [[ "$(pane_current_command "${window_name}" "${pane_index}")" == "codex" ]]; then
+					return 0
+				fi
+				sleep 1
+				((elapsed += 1))
+			done
+			return 1
+			;;
+		claude|gemini)
+			return 0
+			;;
+		*)
+			return 0
+			;;
+	esac
+}
+
 wait_for_ports() {
 	local ports_csv="$1"
 	local timeout_seconds="${2:-45}"
@@ -311,6 +346,36 @@ resolve_agent_command() {
 			die "unsupported agent '${agent}'. use claude, codex, or gemini"
 			;;
 	esac
+}
+
+run_agent_exec_prompt() {
+	local window_name="$1"
+	local pane_index="$2"
+	local agent_name="$3"
+	local work_dir="$4"
+	local prompt_file="$5"
+	local pane_target=""
+	local agent_cmd=""
+	local exec_script=""
+
+	[[ -f "${prompt_file}" ]] || die "prompt file not found: ${prompt_file}"
+	[[ "${agent_name}" == "codex" ]] || die "exec mode currently supports codex only"
+
+	pane_target="$(tmux_pane_target "${window_name}" "${pane_index}")"
+	agent_cmd="$(resolve_agent_command "${agent_name}")"
+	exec_script="$(mktemp "${TMPDIR:-/tmp}/ai-playbook-exec.XXXXXX.sh")"
+	cat > "${exec_script}" <<EOF
+#!/usr/bin/env bash
+cd $(printf '%q' "${work_dir}") || exit 1
+$(printf '%q' "${agent_cmd}") -a never -s workspace-write exec -C $(printf '%q' "${work_dir}") - < $(printf '%q' "${prompt_file}")
+status=\$?
+printf '\n== agent exit ==\nstatus: %s\n' "\$status"
+rm -f $(printf '%q' "${exec_script}")
+exec zsh
+EOF
+	chmod +x "${exec_script}"
+
+	tmux respawn-pane -k -t "${pane_target}" -c "${work_dir}" "${exec_script}"
 }
 
 resolve_ticket_file() {

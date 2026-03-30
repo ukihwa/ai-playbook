@@ -333,9 +333,27 @@ for name in windows.splitlines():
         parts = line.split("\t")
         if len(parts) != 3:
             continue
-        panes.append({"pane": int(parts[0]), "command": parts[1] or "unknown", "dir": parts[2] or "unknown"})
+        pane_index = int(parts[0])
+        command = parts[1] or "unknown"
+        pane_dir = parts[2] or "unknown"
+        mode = command
+        if command in {"bash", "zsh", "sh"}:
+            try:
+                captured = run(["tmux", "capture-pane", "-p", "-t", f"{session}:{name}.{pane_index}", "-S", "-40"])
+            except subprocess.CalledProcessError:
+                captured = ""
+            if "OpenAI Codex v" in captured or "session id:" in captured or "approval: never" in captured:
+                mode = "codex-exec"
+        panes.append({"pane": pane_index, "command": command, "mode": mode, "dir": pane_dir})
     if panes:
-        entries.append({"window": name, "panes": panes})
+        pane0 = panes[0]
+        entries.append({
+            "window": name,
+            "panes": panes,
+            "pane_0_command": pane0.get("command", "unknown"),
+            "pane_0_mode": pane0.get("mode", pane0.get("command", "unknown")),
+            "pane_0_dir": pane0.get("dir", "unknown"),
+        })
 
 print(json.dumps(entries, ensure_ascii=False))
 PY
@@ -454,7 +472,13 @@ if tmux_has_session; then
 		echo " - ${window_name}"
 		while IFS=$'\t' read -r pane_index pane_command pane_dir; do
 			[[ -n "${pane_index}" ]] || continue
-			echo "   - pane ${pane_index}: cmd=${pane_command:-unknown} | dir=${pane_dir:-unknown}"
+			pane_mode="${pane_command:-unknown}"
+			if [[ "${pane_command}" == "bash" || "${pane_command}" == "zsh" || "${pane_command}" == "sh" ]]; then
+				if tmux capture-pane -p -t "$(tmux_pane_target "${window_name}" "${pane_index}")" -S -40 2>/dev/null | grep -Eq 'OpenAI Codex v|session id:|approval: never'; then
+					pane_mode="codex-exec"
+				fi
+			fi
+			echo "   - pane ${pane_index}: cmd=${pane_mode} | dir=${pane_dir:-unknown}"
 		done < <(tmux list-panes -t "$(pane_path "${window_name}")" -F '#{pane_index}	#{pane_current_command}	#{pane_current_path}' 2>/dev/null || true)
 	done < <(tmux list-windows -t "${TMUX_SESSION}" -F '#W')
 else
