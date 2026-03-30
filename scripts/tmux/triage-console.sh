@@ -162,7 +162,7 @@ echo "== triage console =="
 echo "project: ${PRODUCT_NAME}"
 echo "mode: ${MODE_VALUE}"
 echo "plain text -> intake"
-echo "commands: /status, /status-brief, /queue, /queue-latest, /queue-needs, /queue-needs-latest, /daily-report, /repair, /repair-apply, /approve <ticket>, /reject <ticket> [note], /finish <ticket>, /exit"
+echo "commands: /status, /status-brief, /queue, /queue-latest, /queue-needs, /queue-needs-latest, /queue-review, /queue-review-latest, /daily-report, /repair, /repair-apply, /approve <ticket>, /approve-review <ticket>, /reject <ticket> [note], /finish <ticket>, /exit"
 echo
 
 while true; do
@@ -210,6 +210,16 @@ while true; do
 			restore_triage_focus
 			continue
 			;;
+		/queue-review)
+			run_helper "queue-review" "${SCRIPT_DIR}/queue.sh" --config "${CONFIG_PATH}" --status done-awaiting-review || true
+			restore_triage_focus
+			continue
+			;;
+		/queue-review-latest)
+			run_helper "queue-review-latest" "${SCRIPT_DIR}/queue.sh" --config "${CONFIG_PATH}" --status done-awaiting-review --latest 5 || true
+			restore_triage_focus
+			continue
+			;;
 		/daily-report)
 			run_helper "daily-report" "${SCRIPT_DIR}/daily-report.sh" --config "${CONFIG_PATH}" || true
 			restore_triage_focus
@@ -249,6 +259,42 @@ else:
     print(f"approved: {ticket}")
 if note:
     print(f"note: {note}")
+PY
+			fi
+			show_status_brief
+			restore_triage_focus
+			continue
+			;;
+		/approve-review\ *)
+			ticket="${line#"/approve-review "}"
+			if output="$(run_helper_capture "approve-review" "${SCRIPT_DIR}/finish-task.sh" --config "${CONFIG_PATH}" --status done "${ticket}")"; then
+				python3 - "${ticket}" "${output}" <<'PY'
+import sys
+
+ticket = sys.argv[1]
+output = sys.argv[2]
+status = ""
+archived = ""
+cleaned_window = ""
+deleted_worktree = ""
+for raw_line in output.splitlines():
+    line = raw_line.strip()
+    if line.startswith("status: "):
+        status = line[len("status: "):]
+    elif line.startswith("archived: "):
+        archived = line[len("archived: "):]
+    elif line.startswith("cleaned_window: "):
+        cleaned_window = line[len("cleaned_window: "):]
+    elif line.startswith("deleted_worktree: "):
+        deleted_worktree = line[len("deleted_worktree: "):]
+
+print(
+    f"review-approved: {ticket}"
+    + (f" -> {status}" if status else "")
+    + (f" | archived={archived}" if archived else "")
+    + (f" | window={cleaned_window}" if cleaned_window else "")
+    + (f" | worktree={deleted_worktree}" if deleted_worktree else "")
+)
 PY
 			fi
 			show_status_brief

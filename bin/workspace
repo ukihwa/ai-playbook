@@ -34,6 +34,7 @@ Commands:
   report <project>                Summarize dispatch ticket state
   daily-report <project>          Draft one-line daily report items from tickets
   finish-task <project> <id>      Mark, archive, and clean up a completed task
+  approve-review <project> <id>   Approve a done-awaiting-review ticket and finish it
   repair-tasks <project>          Find shell-only stuck task windows and repair them
   apply-ticket <project> <id>     Execute a proposed dispatch ticket
   approve-ticket <project> <id>   Approve a needs-triage ticket and execute it
@@ -231,6 +232,9 @@ case "${COMMAND}" in
 		;;
 	finish-task)
 		exec "${TMUX_DIR}/finish-task.sh" --config "${CONFIG_FILE}" "$@"
+		;;
+	approve-review)
+		exec "${TMUX_DIR}/finish-task.sh" --config "${CONFIG_FILE}" --status done "$@"
 		;;
 	repair-tasks)
 		exec "${TMUX_DIR}/repair-tasks.sh" --config "${CONFIG_FILE}" "$@"
