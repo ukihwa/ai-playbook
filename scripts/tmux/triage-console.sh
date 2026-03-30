@@ -173,6 +173,12 @@ if latest_intake:
         f"[{latest_intake.get('classification', 'unknown')}] "
         f"{latest_intake.get('reason', '')}"
     )
+if stuck > 0:
+    print("hint: stuck tasks detected -> /repair or /repair-apply")
+if counts.get("needs-triage", 0) > 0:
+    print("hint: triage review needed -> /queue-needs-latest")
+if dispatch.get("bootstrap_failures", 0) > 0:
+    print("hint: bootstrap failures present -> /queue-needs-latest")
 PY
 			fi
 			restore_triage_focus
