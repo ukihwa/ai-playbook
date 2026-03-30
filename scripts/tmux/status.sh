@@ -53,6 +53,7 @@ root = Path(sys.argv[1])
 counter = Counter()
 daily_report_allowed = {"applied-task", "applied-review", "done", "blocked"}
 latest = None
+bootstrap_issue_count = 0
 
 if root.exists():
     for path in sorted(root.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True):
@@ -63,12 +64,19 @@ if root.exists():
         if latest is None:
             latest = data | {"ticket_file": str(path)}
         counter[data.get("status", "unknown")] += 1
+        notes = data.get("notes", [])
+        if notes:
+            latest_note = (notes[-1].get("note", "") or "").lower()
+            if "bootstrap failed" in latest_note:
+                bootstrap_issue_count += 1
 
 total = sum(counter.values())
 print(f" - total tickets: {total}")
 for key in ["proposed", "needs-triage", "approved", "approved-task", "approved-review", "applied-task", "applied-review", "done", "blocked", "rejected"]:
     if counter.get(key):
         print(f" - {key}: {counter[key]}")
+if bootstrap_issue_count:
+    print(f" - bootstrap failures: {bootstrap_issue_count}")
 daily_report_count = sum(counter.get(key, 0) for key in daily_report_allowed)
 print(f" - daily-report candidates: {daily_report_count}")
 if latest:
@@ -136,6 +144,7 @@ root = Path(sys.argv[1])
 counter = Counter()
 daily_report_allowed = {"applied-task", "applied-review", "done", "blocked"}
 latest = None
+bootstrap_issue_count = 0
 
 if root.exists():
     for path in sorted(root.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True):
@@ -152,10 +161,16 @@ if root.exists():
                 "goal": data.get("goal", ""),
             }
         counter[data.get("status", "unknown")] += 1
+        notes = data.get("notes", [])
+        if notes:
+            latest_note = (notes[-1].get("note", "") or "").lower()
+            if "bootstrap failed" in latest_note:
+                bootstrap_issue_count += 1
 
 payload = {
     "total_tickets": sum(counter.values()),
     "counts": dict(counter),
+    "bootstrap_failures": bootstrap_issue_count,
     "daily_report_candidates": sum(counter.get(key, 0) for key in daily_report_allowed),
     "latest_ticket": latest,
 }
