@@ -153,6 +153,43 @@ wait_for_pane_command() {
 	return 1
 }
 
+pane_contains_text() {
+	local window_name="$1"
+	local pane_index="$2"
+	local needle="$3"
+	local start_line="${4:--120}"
+	local pane_target
+	pane_target="$(tmux_pane_target "${window_name}" "${pane_index}")"
+	tmux capture-pane -p -t "${pane_target}" -S "${start_line}" 2>/dev/null | grep -Fq "${needle}"
+}
+
+maybe_accept_codex_trust() {
+	local window_name="$1"
+	local pane_index="${2:-0}"
+	local timeout_seconds="${3:-10}"
+	local pane_target
+	pane_target="$(tmux_pane_target "${window_name}" "${pane_index}")"
+	local elapsed=0
+	local accepted="false"
+
+	while (( elapsed < timeout_seconds )); do
+		if pane_contains_text "${window_name}" "${pane_index}" "Do you trust the contents of this directory?"; then
+			tmux send-keys -t "${pane_target}" "1" C-m
+			accepted="true"
+			sleep 1
+		fi
+
+		if [[ "${accepted}" == "true" ]] && ! pane_contains_text "${window_name}" "${pane_index}" "Do you trust the contents of this directory?"; then
+			return 0
+		fi
+
+		sleep 1
+		((elapsed += 1))
+	done
+
+	[[ "${accepted}" == "true" ]]
+}
+
 wait_for_ports() {
 	local ports_csv="$1"
 	local timeout_seconds="${2:-45}"

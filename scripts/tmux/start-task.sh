@@ -140,6 +140,9 @@ if [[ "${SKIP_HANDOFF}" == "false" ]]; then
 	fi
 
 	"${HELPER_DIR}/create-handoff.sh" "${create_args[@]}" >/dev/null
+	if [[ "${AGENT_NAME:-}" == "codex" ]]; then
+		maybe_accept_codex_trust "${WINDOW_NAME}" "${PANE_INDEX}" 12 || true
+	fi
 	if [[ -n "${AGENT_NAME}" && "${PROMPT_MODE}" == "prompt" ]]; then
 		wait_for_pane_command "${WINDOW_NAME}" "${PANE_INDEX}" "${AGENT_NAME}" 8 || true
 	fi
