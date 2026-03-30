@@ -70,7 +70,7 @@ echo "== triage console =="
 echo "project: ${PRODUCT_NAME}"
 echo "mode: ${MODE_VALUE}"
 echo "plain text -> intake"
-echo "commands: /status, /queue, /queue-needs, /queue-needs-latest, /approve <ticket>, /reject <ticket> [note], /exit"
+echo "commands: /status, /queue, /queue-needs, /queue-needs-latest, /repair, /repair-apply, /approve <ticket>, /reject <ticket> [note], /finish <ticket>, /exit"
 echo
 
 while true; do
@@ -108,6 +108,16 @@ while true; do
 			restore_triage_focus
 			continue
 			;;
+		/repair)
+			run_helper "repair-tasks" "${SCRIPT_DIR}/repair-tasks.sh" --config "${CONFIG_PATH}" || true
+			restore_triage_focus
+			continue
+			;;
+		/repair-apply)
+			run_helper "repair-tasks-apply" "${SCRIPT_DIR}/repair-tasks.sh" --config "${CONFIG_PATH}" --apply || true
+			restore_triage_focus
+			continue
+			;;
 		/approve\ *)
 			ticket="${line#"/approve "}"
 			run_helper "approve-ticket" "${SCRIPT_DIR}/approve-ticket.sh" --config "${CONFIG_PATH}" "${ticket}" || true
@@ -126,6 +136,12 @@ while true; do
 			else
 				run_helper "reject-ticket" "${SCRIPT_DIR}/reject-ticket.sh" --config "${CONFIG_PATH}" "${ticket}" || true
 			fi
+			restore_triage_focus
+			continue
+			;;
+		/finish\ *)
+			ticket="${line#"/finish "}"
+			run_helper "finish-task" "${SCRIPT_DIR}/finish-task.sh" --config "${CONFIG_PATH}" "${ticket}" || true
 			restore_triage_focus
 			continue
 			;;
