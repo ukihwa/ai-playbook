@@ -83,18 +83,15 @@ subprocess.run(
         "--agent", agent_name,
         "--mode", mode,
         "--pane", pane_index,
-        ticket_input,
-    ],
-    check=True,
-)
-
-subprocess.run(
-    [
-        f"{script_dir}/mark-ticket.sh",
-        "--config", config_path,
-        "--status", "approved-task",
+        "--approved",
         ticket_input,
     ],
     check=True,
 )
 PY
+
+print_header "ticket approval submitted"
+echo "ticket: ${TICKET_INPUT}"
+echo "agent: ${AGENT_NAME}"
+echo "mode: ${MODE}"
+echo "next: apply-ticket --approved"
