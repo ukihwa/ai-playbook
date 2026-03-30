@@ -319,7 +319,7 @@ PY
 		continue
 	fi
 
-	if ! python3 - "${result}" <<'PY'
+	if ! outcome="$(python3 - "${result}" <<'PY'
 import json
 import sys
 
@@ -347,11 +347,17 @@ else:
     else:
         print(f"queued: {request}")
 PY
-	then
+	)"; then
 		echo "error: failed to parse intake result"
 		echo "${result}"
 		restore_triage_focus
 		continue
 	fi
+	echo "${outcome}"
+	case "${outcome}" in
+		auto-applied:*|applied:*|needs-triage:*|proposed:*|failed:*)
+			show_status_brief
+			;;
+	esac
 	restore_triage_focus
 done
